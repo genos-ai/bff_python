@@ -70,7 +70,8 @@ def create_dispatcher() -> "Dispatcher":
     # Use MemoryStorage for development
     # For production, use RedisStorage:
     # from aiogram.fsm.storage.redis import RedisStorage
-    # storage = RedisStorage.from_url(settings.redis_url)
+    # from modules.backend.core.config import get_redis_url
+    # storage = RedisStorage.from_url(get_redis_url())
     storage = MemoryStorage()
 
     dp = Dispatcher(storage=storage)

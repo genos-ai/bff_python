@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from typer.testing import CliRunner
 
-from cli import app
+from cli_typer import app
 
 runner = CliRunner()
 

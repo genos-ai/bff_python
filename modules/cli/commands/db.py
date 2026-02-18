@@ -48,9 +48,9 @@ def upgrade(
     Upgrade database to a revision.
 
     Examples:
-        cli.py db upgrade          # Upgrade to latest
-        cli.py db upgrade head     # Upgrade to latest
-        cli.py db upgrade abc123   # Upgrade to specific revision
+        cli_typer.py db upgrade          # Upgrade to latest
+        cli_typer.py db upgrade head     # Upgrade to latest
+        cli_typer.py db upgrade abc123   # Upgrade to specific revision
     """
     _check_alembic()
     console.print(f"[bold]Upgrading database to revision: {revision}[/bold]\n")
@@ -66,9 +66,9 @@ def downgrade(
     Downgrade database to a revision.
 
     Examples:
-        cli.py db downgrade -1       # Downgrade one revision
-        cli.py db downgrade abc123   # Downgrade to specific revision
-        cli.py db downgrade base     # Downgrade to initial state
+        cli_typer.py db downgrade -1       # Downgrade one revision
+        cli_typer.py db downgrade abc123   # Downgrade to specific revision
+        cli_typer.py db downgrade base     # Downgrade to initial state
     """
     _check_alembic()
     console.print(f"[bold]Downgrading database to revision: {revision}[/bold]\n")
@@ -82,7 +82,7 @@ def current() -> None:
     Show current database revision.
 
     Examples:
-        cli.py db current
+        cli_typer.py db current
     """
     _check_alembic()
     console.print("[bold]Current database revision:[/bold]\n")
@@ -95,7 +95,7 @@ def history() -> None:
     Show migration history.
 
     Examples:
-        cli.py db history
+        cli_typer.py db history
     """
     _check_alembic()
     console.print("[bold]Migration history:[/bold]\n")
@@ -110,8 +110,8 @@ def generate(
     Auto-generate a new migration from model changes.
 
     Examples:
-        cli.py db generate -m "add users table"
-        cli.py db generate --message "add email column"
+        cli_typer.py db generate -m "add users table"
+        cli_typer.py db generate --message "add email column"
     """
     _check_alembic()
     console.print(f"[bold]Generating migration: {message}[/bold]\n")
@@ -127,7 +127,7 @@ def revision(
     Create a new empty migration file.
 
     Examples:
-        cli.py db revision -m "manual migration"
+        cli_typer.py db revision -m "manual migration"
     """
     _check_alembic()
     console.print(f"[bold]Creating migration: {message}[/bold]\n")

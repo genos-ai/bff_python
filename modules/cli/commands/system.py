@@ -62,6 +62,7 @@ def config(
             "database": app_config.database,
             "logging": app_config.logging,
             "features": app_config.features,
+            "security": app_config.security,
         }
 
         if section:
@@ -105,28 +106,29 @@ def env() -> None:
     Shows application environment, debug mode, etc.
     """
     try:
-        from modules.backend.core.config import get_settings
+        from modules.backend.core.config import get_app_config
 
-        settings = get_settings()
+        app_config = get_app_config()
+        app = app_config.application
+        server = app["server"]
 
         table = Table(title="Environment Settings", show_header=True)
         table.add_column("Setting", style="cyan")
         table.add_column("Value")
 
-        # Only show non-sensitive settings
-        table.add_row("App Name", settings.app_name)
-        table.add_row("Environment", settings.app_env)
-        table.add_row("Debug Mode", str(settings.app_debug))
-        table.add_row("Log Level", settings.app_log_level)
-        table.add_row("Server Host", settings.server_host)
-        table.add_row("Server Port", str(settings.server_port))
+        table.add_row("App Name", app["name"])
+        table.add_row("Environment", app["environment"])
+        table.add_row("Debug Mode", str(app["debug"]))
+        table.add_row("Log Level", app_config.logging["level"])
+        table.add_row("Server Host", server["host"])
+        table.add_row("Server Port", str(server["port"]))
 
         console.print(table)
 
     except Exception as e:
-        console.print(f"[yellow]Warning: Could not load environment settings[/yellow]")
+        console.print(f"[yellow]Warning: Could not load configuration[/yellow]")
         console.print(f"[dim]Error: {e}[/dim]")
-        console.print("\n[dim]Ensure config/.env is configured.[/dim]")
+        console.print("\n[dim]Ensure config/settings/*.yaml files exist.[/dim]")
 
 
 @app.command()

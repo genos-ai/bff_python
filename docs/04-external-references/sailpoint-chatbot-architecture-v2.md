@@ -492,7 +492,7 @@ project/
 │
 ├── requirements.txt                    # EXISTING (extend — see below)
 ├── pytest.ini                         # EXISTING
-├── example.py                         # EXISTING
+├── cli_click.py                       # EXISTING
 └── .project_root                      # EXISTING
 ```
 

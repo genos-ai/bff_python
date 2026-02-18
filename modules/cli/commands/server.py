@@ -17,14 +17,14 @@ console = Console()
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
-def _get_settings():
-    """Load settings with error handling."""
+def _get_app_config():
+    """Load app config with error handling."""
     try:
-        from modules.backend.core.config import get_settings
-        return get_settings()
+        from modules.backend.core.config import get_app_config
+        return get_app_config()
     except Exception as e:
-        console.print(f"[red]Error: Could not load settings.[/red]")
-        console.print(f"[dim]Ensure config/.env exists and is configured.[/dim]")
+        console.print(f"[red]Error: Could not load configuration.[/red]")
+        console.print(f"[dim]Ensure config/settings/*.yaml files exist.[/dim]")
         console.print(f"[dim]Error: {e}[/dim]")
         raise typer.Exit(1)
 
@@ -39,14 +39,15 @@ def start(
     Start the FastAPI development server.
 
     Examples:
-        cli.py server start
-        cli.py server start --reload
-        cli.py server start --host 0.0.0.0 --port 8080
+        cli_typer.py server start
+        cli_typer.py server start --reload
+        cli_typer.py server start --host 0.0.0.0 --port 8080
     """
-    settings = _get_settings()
+    app_config = _get_app_config()
+    server_config = app_config.application["server"]
 
-    server_host = host or settings.server_host
-    server_port = port or settings.server_port
+    server_host = host or server_config["host"]
+    server_port = port or server_config["port"]
 
     cmd = [
         sys.executable, "-m", "uvicorn",
@@ -80,17 +81,15 @@ def worker(
     Start the Taskiq background task worker.
 
     Examples:
-        cli.py server worker
-        cli.py server worker --workers 4
+        cli_typer.py server worker
+        cli_typer.py server worker --workers 4
     """
-    settings = _get_settings()
-
-    # Verify Redis URL
     try:
-        redis_url = settings.redis_url
+        from modules.backend.core.config import get_redis_url
+        redis_url = get_redis_url()
         console.print(f"[dim]Redis: {redis_url.split('@')[-1]}[/dim]")
     except Exception as e:
-        console.print("[red]Error: REDIS_URL not configured in config/.env[/red]")
+        console.print(f"[red]Error: Redis not configured: {e}[/red]")
         raise typer.Exit(1)
 
     cmd = [
@@ -120,16 +119,14 @@ def scheduler() -> None:
     WARNING: Run only ONE scheduler instance to avoid duplicate task execution.
 
     Examples:
-        cli.py server scheduler
+        cli_typer.py server scheduler
     """
-    settings = _get_settings()
-
-    # Verify Redis URL
     try:
-        redis_url = settings.redis_url
+        from modules.backend.core.config import get_redis_url
+        redis_url = get_redis_url()
         console.print(f"[dim]Redis: {redis_url.split('@')[-1]}[/dim]")
     except Exception as e:
-        console.print("[red]Error: REDIS_URL not configured in config/.env[/red]")
+        console.print(f"[red]Error: Redis not configured: {e}[/red]")
         raise typer.Exit(1)
 
     # Register scheduled tasks

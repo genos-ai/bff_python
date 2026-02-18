@@ -42,12 +42,12 @@ class TestAuthMiddleware:
 
         event = self._create_mock_update(123456789, "testuser")
 
-        mock_settings = MagicMock()
-        mock_settings.telegram_authorized_users = [123456789, 987654321]
+        mock_app_config = MagicMock()
+        mock_app_config.application = {"telegram": {"authorized_users": [123456789, 987654321]}}
 
         with patch(
-            "modules.telegram.middlewares.auth.get_settings",
-            return_value=mock_settings,
+            "modules.telegram.middlewares.auth.get_app_config",
+            return_value=mock_app_config,
         ):
             result = await middleware(handler, event, {})
 
@@ -64,12 +64,12 @@ class TestAuthMiddleware:
 
         event = self._create_mock_update(999999999, "unauthorized")
 
-        mock_settings = MagicMock()
-        mock_settings.telegram_authorized_users = [123456789]
+        mock_app_config = MagicMock()
+        mock_app_config.application = {"telegram": {"authorized_users": [123456789]}}
 
         with patch(
-            "modules.telegram.middlewares.auth.get_settings",
-            return_value=mock_settings,
+            "modules.telegram.middlewares.auth.get_app_config",
+            return_value=mock_app_config,
         ):
             result = await middleware(handler, event, {})
 
@@ -86,12 +86,12 @@ class TestAuthMiddleware:
 
         event = self._create_mock_update(123456789, "anyuser")
 
-        mock_settings = MagicMock()
-        mock_settings.telegram_authorized_users = []
+        mock_app_config = MagicMock()
+        mock_app_config.application = {"telegram": {"authorized_users": []}}
 
         with patch(
-            "modules.telegram.middlewares.auth.get_settings",
-            return_value=mock_settings,
+            "modules.telegram.middlewares.auth.get_app_config",
+            return_value=mock_app_config,
         ):
             result = await middleware(handler, event, {})
 
@@ -109,12 +109,12 @@ class TestAuthMiddleware:
 
         event = self._create_mock_update(123456789, "admin")
 
-        mock_settings = MagicMock()
-        mock_settings.telegram_authorized_users = [123456789, 987654321]
+        mock_app_config = MagicMock()
+        mock_app_config.application = {"telegram": {"authorized_users": [123456789, 987654321]}}
 
         with patch(
-            "modules.telegram.middlewares.auth.get_settings",
-            return_value=mock_settings,
+            "modules.telegram.middlewares.auth.get_app_config",
+            return_value=mock_app_config,
         ):
             await middleware(handler, event, data)
 
@@ -131,12 +131,12 @@ class TestAuthMiddleware:
 
         event = self._create_mock_update(987654321, "trader")
 
-        mock_settings = MagicMock()
-        mock_settings.telegram_authorized_users = [123456789, 987654321]
+        mock_app_config = MagicMock()
+        mock_app_config.application = {"telegram": {"authorized_users": [123456789, 987654321]}}
 
         with patch(
-            "modules.telegram.middlewares.auth.get_settings",
-            return_value=mock_settings,
+            "modules.telegram.middlewares.auth.get_app_config",
+            return_value=mock_app_config,
         ):
             await middleware(handler, event, data)
 

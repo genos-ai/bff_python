@@ -2,13 +2,26 @@
 # Database Configuration
 # =============================================================================
 # Available options:
-#   pool_size       - Connection pool size (integer, default: 5)
-#   max_overflow    - Max connections above pool_size (integer, default: 10)
-#   pool_timeout    - Seconds to wait for connection (integer, default: 30)
-#   pool_recycle    - Seconds before connection recycled (integer, default: 1800)
-#   echo            - Log SQL statements (boolean, default: false)
-#   echo_pool       - Log connection pool events (boolean, default: false)
+#   host            - Database host (string)
+#   port            - Database port (integer)
+#   name            - Database name (string)
+#   user            - Database user (string)
+#   pool_size       - Connection pool size (integer)
+#   max_overflow    - Max connections above pool_size (integer)
+#   pool_timeout    - Seconds to wait for connection (integer)
+#   pool_recycle    - Seconds before connection recycled (integer)
+#   echo            - Log SQL statements (boolean)
+#   echo_pool       - Log connection pool events (boolean)
+#   redis           - Redis connection settings (object)
+#     host          - Redis host (string)
+#     port          - Redis port (integer)
+#     db            - Redis database number (integer)
 # =============================================================================
+
+host: "localhost"
+port: 5432
+name: "bff_app"
+user: "postgres"
 
 pool_size: 5
 max_overflow: 10
@@ -16,3 +29,8 @@ pool_timeout: 30
 pool_recycle: 1800
 echo: false
 echo_pool: false
+
+redis:
+  host: "localhost"
+  port: 6379
+  db: 0

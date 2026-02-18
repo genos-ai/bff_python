@@ -10,7 +10,7 @@ from typing import Any
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
-from modules.backend.core.config import get_settings
+from modules.backend.core.config import get_app_config, get_settings
 from modules.backend.core.exceptions import AuthenticationError
 from modules.backend.core.logging import get_logger
 from modules.backend.core.utils import utc_now
@@ -43,15 +43,16 @@ def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = 
         Encoded JWT token
     """
     settings = get_settings()
+    jwt_config = get_app_config().security["jwt"]
     to_encode = data.copy()
 
     if expires_delta:
         expire = utc_now() + expires_delta
     else:
-        expire = utc_now() + timedelta(minutes=settings.jwt_access_token_expire_minutes)
+        expire = utc_now() + timedelta(minutes=jwt_config["access_token_expire_minutes"])
 
     to_encode.update({"exp": expire, "type": "access"})
-    encoded_jwt = jwt.encode(to_encode, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+    encoded_jwt = jwt.encode(to_encode, settings.jwt_secret, algorithm=jwt_config["algorithm"])
     return encoded_jwt
 
 
@@ -66,10 +67,11 @@ def create_refresh_token(data: dict[str, Any]) -> str:
         Encoded JWT refresh token
     """
     settings = get_settings()
+    jwt_config = get_app_config().security["jwt"]
     to_encode = data.copy()
-    expire = utc_now() + timedelta(days=settings.jwt_refresh_token_expire_days)
+    expire = utc_now() + timedelta(days=jwt_config["refresh_token_expire_days"])
     to_encode.update({"exp": expire, "type": "refresh"})
-    encoded_jwt = jwt.encode(to_encode, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+    encoded_jwt = jwt.encode(to_encode, settings.jwt_secret, algorithm=jwt_config["algorithm"])
     return encoded_jwt
 
 
@@ -87,8 +89,9 @@ def decode_token(token: str) -> dict[str, Any]:
         AuthenticationError: If token is invalid or expired
     """
     settings = get_settings()
+    jwt_config = get_app_config().security["jwt"]
     try:
-        payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+        payload = jwt.decode(token, settings.jwt_secret, algorithms=[jwt_config["algorithm"]])
         return payload
     except JWTError as e:
         logger.warning("Token decode failed", extra={"error": str(e)})

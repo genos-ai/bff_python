@@ -6,13 +6,12 @@ Uses Redis as the backend for task queue management.
 
 Usage:
     # Start worker process
-    python example.py --action worker
+    python cli_click.py --action worker
 
     # Or directly with taskiq
     taskiq worker modules.backend.tasks.broker:broker
 """
 
-import os
 from typing import TYPE_CHECKING
 
 from modules.backend.core.logging import get_logger
@@ -34,23 +33,8 @@ def get_redis_url() -> str:
     Raises:
         RuntimeError: If REDIS_URL is not configured
     """
-    redis_url = os.environ.get("REDIS_URL")
-    if not redis_url:
-        # Try loading from .env file
-        try:
-            from modules.backend.core.config import get_settings
-            settings = get_settings()
-            redis_url = settings.redis_url
-        except Exception:
-            pass
-
-    if not redis_url:
-        raise RuntimeError(
-            "REDIS_URL not configured. Set REDIS_URL environment variable "
-            "or configure it in config/.env"
-        )
-
-    return redis_url
+    from modules.backend.core.config import get_redis_url as _get_redis_url
+    return _get_redis_url()
 
 
 def create_broker() -> "ListQueueBroker":

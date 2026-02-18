@@ -237,10 +237,10 @@ If you need local time scheduling, calculate the UTC equivalent:
 
 ```bash
 # Start worker (executes tasks from queue)
-python example.py --action worker --workers 2
+python cli_click.py --action worker --workers 2
 
 # Start scheduler (sends scheduled tasks to queue)
-python example.py --action scheduler
+python cli_click.py --action scheduler
 
 # Or directly with taskiq
 taskiq worker modules.backend.tasks.broker:broker --workers 2
@@ -252,10 +252,10 @@ taskiq scheduler modules.backend.tasks.scheduler:scheduler
 **Development:**
 ```bash
 # Terminal 1: Worker
-python example.py --action worker --verbose
+python cli_click.py --action worker --verbose
 
 # Terminal 2: Scheduler
-python example.py --action scheduler --verbose
+python cli_click.py --action scheduler --verbose
 ```
 
 **Production:**
@@ -484,14 +484,14 @@ async def process_batch(items: list[str], batch_size: int = 100) -> dict:
 
 ### Tasks Not Executing
 
-1. Check worker is running: `python example.py --action worker`
+1. Check worker is running: `python cli_click.py --action worker`
 2. Check Redis connection: Verify `REDIS_URL` in config
 3. Check task registration: Look for registration logs on worker startup
 4. Check queue: Use Redis CLI to inspect queue contents
 
 ### Scheduled Tasks Not Running
 
-1. Check scheduler is running: `python example.py --action scheduler`
+1. Check scheduler is running: `python cli_click.py --action scheduler`
 2. Verify only ONE scheduler instance is running
 3. Check cron expression syntax
 4. Check scheduled task registration logs

@@ -10,7 +10,7 @@ from typing import Any, Awaitable, Callable
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject, Update
 
-from modules.backend.core.config import get_settings
+from modules.backend.core.config import get_app_config
 from modules.backend.core.logging import get_logger
 
 logger = get_logger(__name__)
@@ -64,7 +64,7 @@ class AuthMiddleware(BaseMiddleware):
         Returns:
             Handler result or None if unauthorized
         """
-        settings = get_settings()
+        app_config = get_app_config()
 
         # Extract user from the event
         user = None
@@ -87,7 +87,7 @@ class AuthMiddleware(BaseMiddleware):
         user_id = user.id
 
         # Check if user is authorized
-        authorized_users = settings.telegram_authorized_users
+        authorized_users = app_config.application["telegram"]["authorized_users"]
 
         # If no authorized users configured, allow all (development mode)
         if not authorized_users:

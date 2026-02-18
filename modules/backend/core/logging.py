@@ -2,24 +2,29 @@
 Centralized Logging Configuration.
 
 All modules must use this logging setup. Do not create standalone loggers.
+Configuration is loaded from config/settings/logging.yaml.
 
 Features:
 - Structured JSON logging with structlog
 - Source-based JSONL file output (web, cli, telegram, api, database, tasks, unknown)
 - Console output for development
 - Request context binding (request_id, frontend)
+- Configuration driven by logging.yaml
 
 Usage:
     from modules.backend.core.logging import get_logger, setup_logging
 
-    # Setup at application start
-    setup_logging(level="INFO", format_type="json", enable_file_logging=True)
+    # Setup at application start (loads from logging.yaml)
+    setup_logging()
+
+    # Override config values if needed
+    setup_logging(level="DEBUG", format_type="console")
 
     # Get logger in modules
     logger = get_logger(__name__)
     logger.info("Message", extra={"key": "value"})
 
-Log Files (when enabled):
+Log Files (when enabled via logging.yaml):
     data/logs/web.jsonl      - Web frontend requests
     data/logs/cli.jsonl      - CLI operations
     data/logs/telegram.jsonl - Telegram bot interactions
@@ -31,14 +36,16 @@ Log Files (when enabled):
 """
 
 import logging
-import os
 import sys
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any
 
 import structlog
+import yaml
 from structlog.typing import Processor
+
+from modules.backend.core.config import find_project_root
 
 # Valid log sources - logs are routed to files based on these
 LOG_SOURCES = {
@@ -56,23 +63,48 @@ LOG_SOURCES = {
 # Module-level state
 _file_handlers: dict[str, logging.Handler] = {}
 _logs_dir: Path | None = None
+_logging_config: dict[str, Any] | None = None
 
 
-def _get_project_root() -> Path:
-    """Find project root by looking for .project_root marker."""
-    current = Path(__file__).resolve()
-    for parent in [current] + list(current.parents):
-        if (parent / ".project_root").exists():
-            return parent
-    # Fallback to current working directory
-    return Path.cwd()
+def _load_logging_config() -> dict[str, Any]:
+    """
+    Load logging configuration from config/settings/logging.yaml.
+
+    Returns:
+        Dictionary containing logging configuration
+
+    Raises:
+        FileNotFoundError: If logging.yaml does not exist
+    """
+    global _logging_config
+    if _logging_config is None:
+        project_root = find_project_root()
+        config_path = project_root / "config" / "settings" / "logging.yaml"
+
+        if not config_path.exists():
+            raise FileNotFoundError(f"Logging configuration not found: {config_path}")
+
+        with open(config_path) as f:
+            _logging_config = yaml.safe_load(f) or {}
+
+    return _logging_config
+
+
+def _get_logging_config() -> dict[str, Any]:
+    """
+    Get the cached logging configuration.
+
+    Returns:
+        Dictionary containing logging configuration
+    """
+    return _load_logging_config()
 
 
 def _get_logs_dir() -> Path:
     """Get the logs directory path, creating if needed."""
     global _logs_dir
     if _logs_dir is None:
-        project_root = _get_project_root()
+        project_root = find_project_root()
         _logs_dir = project_root / "data" / "logs"
         _logs_dir.mkdir(parents=True, exist_ok=True)
     return _logs_dir
@@ -81,8 +113,8 @@ def _get_logs_dir() -> Path:
 def _create_file_handler(
     source: str,
     formatter: logging.Formatter,
-    max_bytes: int = 10 * 1024 * 1024,  # 10MB
-    backup_count: int = 5,
+    max_bytes: int | None = None,
+    backup_count: int | None = None,
 ) -> RotatingFileHandler:
     """
     Create a rotating file handler for a specific source.
@@ -90,12 +122,20 @@ def _create_file_handler(
     Args:
         source: Log source name (web, cli, telegram, etc.)
         formatter: Log formatter to use
-        max_bytes: Max file size before rotation (default 10MB)
-        backup_count: Number of backup files to keep (default 5)
+        max_bytes: Max file size before rotation (from config if not provided)
+        backup_count: Number of backup files to keep (from config if not provided)
 
     Returns:
         Configured RotatingFileHandler
     """
+    config = _get_logging_config()
+    file_config = config["handlers"]["file"]
+
+    if max_bytes is None:
+        max_bytes = file_config["max_bytes"]
+    if backup_count is None:
+        backup_count = file_config["backup_count"]
+
     logs_dir = _get_logs_dir()
     log_file = logs_dir / f"{source}.jsonl"
 
@@ -179,20 +219,42 @@ class SourceRoutingHandler(logging.Handler):
 
 
 def setup_logging(
-    level: str = "INFO",
-    format_type: str = "json",
-    enable_file_logging: bool = True,
+    level: str | None = None,
+    format_type: str | None = None,
+    enable_console: bool | None = None,
+    enable_file_logging: bool | None = None,
 ) -> None:
     """
     Configure structured logging for the application.
 
+    Configuration is loaded from config/settings/logging.yaml.
+    Parameters passed to this function override the YAML configuration.
+
     Args:
-        level: Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-        format_type: Output format ('json' or 'console')
-        enable_file_logging: Whether to write to JSONL files (default True)
+        level: Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL). Overrides config.
+        format_type: Output format ('json' or 'console'). Overrides config.
+        enable_console: Whether to enable console output. Overrides config.
+        enable_file_logging: Whether to write to JSONL files. Overrides config.
     """
-    # Convert string level to logging constant
-    log_level = getattr(logging, level.upper(), logging.INFO)
+    config = _get_logging_config()
+
+    effective_level = level if level is not None else config["level"]
+    effective_format = format_type if format_type is not None else config["format"]
+
+    handlers_config = config["handlers"]
+    console_config = handlers_config["console"]
+    file_config = handlers_config["file"]
+
+    effective_console_enabled = (
+        enable_console if enable_console is not None
+        else console_config["enabled"]
+    )
+    effective_file_enabled = (
+        enable_file_logging if enable_file_logging is not None
+        else file_config["enabled"]
+    )
+
+    log_level = getattr(logging, effective_level.upper())
 
     # Shared processors for both structlog and stdlib logging
     shared_processors: list[Processor] = [
@@ -211,7 +273,7 @@ def setup_logging(
         foreign_pre_chain=shared_processors,
     )
 
-    if format_type == "console":
+    if effective_format == "console":
         # Human-readable console output for development
         structlog.configure(
             processors=shared_processors
@@ -249,13 +311,14 @@ def setup_logging(
     for handler in root_logger.handlers[:]:
         root_logger.removeHandler(handler)
 
-    # Add console handler
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setFormatter(console_formatter)
-    root_logger.addHandler(console_handler)
+    # Add console handler if enabled
+    if effective_console_enabled:
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setFormatter(console_formatter)
+        root_logger.addHandler(console_handler)
 
-    # Add source-routing file handler
-    if enable_file_logging:
+    # Add source-routing file handler if enabled
+    if effective_file_enabled:
         source_handler = SourceRoutingHandler(json_formatter, level=log_level)
         root_logger.addHandler(source_handler)
 

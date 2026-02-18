@@ -30,12 +30,12 @@ def run(
     Run the test suite.
 
     Examples:
-        cli.py test run                    # Run all tests
-        cli.py test run unit               # Run unit tests only
-        cli.py test run integration        # Run integration tests
-        cli.py test run unit --coverage    # Unit tests with coverage
-        cli.py test run -k "test_health"   # Run tests matching pattern
-        cli.py test run --fail-fast        # Stop on first failure
+        cli_typer.py test run                    # Run all tests
+        cli_typer.py test run unit               # Run unit tests only
+        cli_typer.py test run integration        # Run integration tests
+        cli_typer.py test run unit --coverage    # Unit tests with coverage
+        cli_typer.py test run -k "test_health"   # Run tests matching pattern
+        cli_typer.py test run --fail-fast        # Stop on first failure
     """
     cmd = [sys.executable, "-m", "pytest"]
 
@@ -84,8 +84,8 @@ def unit(
     Run unit tests (shortcut).
 
     Examples:
-        cli.py test unit
-        cli.py test unit --coverage
+        cli_typer.py test unit
+        cli_typer.py test unit --coverage
     """
     cmd = [sys.executable, "-m", "pytest", "tests/unit", "-v"]
 
@@ -113,7 +113,7 @@ def integration(
     Run integration tests (shortcut).
 
     Examples:
-        cli.py test integration
+        cli_typer.py test integration
     """
     cmd = [sys.executable, "-m", "pytest", "tests/integration", "-v"]
 

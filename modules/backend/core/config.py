@@ -1,8 +1,19 @@
 """
 Configuration Management.
 
-Loads settings from environment variables and YAML configuration files.
-All configuration must come from these sources - no hardcoded values in code.
+Loads secrets from config/.env and settings from config/settings/*.yaml.
+No hardcoded values in code — all configuration comes from these sources.
+
+Secrets (.env):
+    DB_PASSWORD, REDIS_PASSWORD, JWT_SECRET, API_KEY_SALT,
+    TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET
+
+Settings (YAML):
+    application.yaml - App identity, server, cors, telegram, pagination
+    database.yaml    - Database and Redis connection settings
+    logging.yaml     - Logging configuration
+    features.yaml    - Feature flags
+    security.yaml    - JWT settings
 """
 
 from functools import lru_cache
@@ -10,7 +21,6 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -37,73 +47,14 @@ def load_yaml_config(filename: str) -> dict[str, Any]:
 
 
 class Settings(BaseSettings):
-    """Application settings loaded from environment variables."""
+    """Secrets loaded from config/.env. Only passwords, tokens, and keys."""
 
-    # Database
-    db_host: str
-    db_port: int = 5432
-    db_name: str
-    db_user: str
     db_password: str
-
-    # Redis
-    redis_url: str
-
-    # Security
+    redis_password: str
     jwt_secret: str
-    jwt_algorithm: str = "HS256"
-    jwt_access_token_expire_minutes: int = 30
-    jwt_refresh_token_expire_days: int = 7
     api_key_salt: str
-
-    # Application
-    app_name: str = "BFF Application"
-    app_env: str = "development"
-    app_debug: bool = False
-    app_log_level: str = "INFO"
-
-    # Server
-    server_host: str = "0.0.0.0"
-    server_port: int = 8000
-
-    # CORS (comma-separated string, parsed to list via property)
-    cors_origins_str: str = ""
-
-    # Telegram Bot
-    telegram_bot_token: str | None = None
-    telegram_webhook_secret: str | None = None
-    telegram_webhook_path: str = "/webhook/telegram"
-    telegram_authorized_users_str: str = ""
-
-    @property
-    def cors_origins(self) -> list[str]:
-        """Parse CORS origins from comma-separated string."""
-        if not self.cors_origins_str:
-            return []
-        return [origin.strip() for origin in self.cors_origins_str.split(",") if origin.strip()]
-
-    @property
-    def telegram_authorized_users(self) -> list[int]:
-        """Parse authorized Telegram user IDs from comma-separated string."""
-        if not self.telegram_authorized_users_str:
-            return []
-        return [int(uid.strip()) for uid in self.telegram_authorized_users_str.split(",") if uid.strip()]
-
-    @property
-    def database_url(self) -> str:
-        """Construct async database URL."""
-        return (
-            f"postgresql+asyncpg://{self.db_user}:{self.db_password}"
-            f"@{self.db_host}:{self.db_port}/{self.db_name}"
-        )
-
-    @property
-    def sync_database_url(self) -> str:
-        """Construct sync database URL for Alembic."""
-        return (
-            f"postgresql://{self.db_user}:{self.db_password}"
-            f"@{self.db_host}:{self.db_port}/{self.db_name}"
-        )
+    telegram_bot_token: str
+    telegram_webhook_secret: str
 
     model_config = SettingsConfigDict(
         env_file="config/.env",
@@ -120,6 +71,7 @@ class AppConfig:
         self._database = load_yaml_config("database.yaml")
         self._logging = load_yaml_config("logging.yaml")
         self._features = load_yaml_config("features.yaml")
+        self._security = load_yaml_config("security.yaml")
 
     @property
     def application(self) -> dict[str, Any]:
@@ -141,10 +93,15 @@ class AppConfig:
         """Feature flags."""
         return self._features
 
+    @property
+    def security(self) -> dict[str, Any]:
+        """Security settings."""
+        return self._security
+
 
 @lru_cache
 def get_settings() -> Settings:
-    """Get cached settings instance."""
+    """Get cached secrets instance."""
     return Settings()
 
 
@@ -152,3 +109,32 @@ def get_settings() -> Settings:
 def get_app_config() -> AppConfig:
     """Get cached application configuration."""
     return AppConfig()
+
+
+def get_database_url(async_driver: bool = True) -> str:
+    """
+    Construct database URL from YAML config and secrets.
+
+    Args:
+        async_driver: Use asyncpg driver if True, psycopg2 if False.
+
+    Returns:
+        Database connection URL string.
+    """
+    db = get_app_config().database
+    password = get_settings().db_password
+    driver = "postgresql+asyncpg" if async_driver else "postgresql"
+    return f"{driver}://{db['user']}:{password}@{db['host']}:{db['port']}/{db['name']}"
+
+
+def get_redis_url() -> str:
+    """
+    Construct Redis URL from YAML config and secrets.
+
+    Returns:
+        Redis connection URL string.
+    """
+    redis = get_app_config().database["redis"]
+    password = get_settings().redis_password
+    auth = f":{password}@" if password else ""
+    return f"redis://{auth}{redis['host']}:{redis['port']}/{redis['db']}"

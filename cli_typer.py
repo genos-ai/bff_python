@@ -6,35 +6,35 @@ Interactive command-line client for the backend API.
 Built with Typer for type-safe commands and Rich for formatted output.
 
 Usage:
-    python cli.py --help                    # Show help
+    python cli_typer.py --help                    # Show help
 
     # Server management
-    python cli.py server start              # Start FastAPI server
-    python cli.py server start --reload     # Start with auto-reload
-    python cli.py server worker             # Start background worker
-    python cli.py server scheduler          # Start task scheduler
+    python cli_typer.py server start              # Start FastAPI server
+    python cli_typer.py server start --reload     # Start with auto-reload
+    python cli_typer.py server worker             # Start background worker
+    python cli_typer.py server scheduler          # Start task scheduler
 
     # Database migrations
-    python cli.py db current                # Show current revision
-    python cli.py db upgrade                # Upgrade to latest
-    python cli.py db generate -m "message"  # Generate migration
+    python cli_typer.py db current                # Show current revision
+    python cli_typer.py db upgrade                # Upgrade to latest
+    python cli_typer.py db generate -m "message"  # Generate migration
 
     # Testing
-    python cli.py test run                  # Run all tests
-    python cli.py test unit --coverage      # Unit tests with coverage
+    python cli_typer.py test run                  # Run all tests
+    python cli_typer.py test unit --coverage      # Unit tests with coverage
 
     # Health checks
-    python cli.py health check              # Local health check (no server)
-    python cli.py health status             # Backend health (requires server)
-    python cli.py health ping               # Ping backend
+    python cli_typer.py health check              # Local health check (no server)
+    python cli_typer.py health status             # Backend health (requires server)
+    python cli_typer.py health ping               # Ping backend
 
     # System info
-    python cli.py system info               # Show app info
-    python cli.py system config             # Show configuration
-    python cli.py system env                # Show environment
+    python cli_typer.py system info               # Show app info
+    python cli_typer.py system config             # Show configuration
+    python cli_typer.py system env                # Show environment
 
     # Interactive mode
-    python cli.py shell                     # Start interactive shell
+    python cli_typer.py shell                     # Start interactive shell
 
 Options:
     --verbose, -v     Enable verbose output

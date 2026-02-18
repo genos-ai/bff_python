@@ -27,8 +27,8 @@ def status(
     Shows basic health or detailed component status.
 
     Examples:
-        cli.py health status
-        cli.py health status -d
+        cli_typer.py health status
+        cli_typer.py health status -d
     """
     asyncio.run(_status(detailed))
 
@@ -57,7 +57,7 @@ async def _status(detailed: bool) -> None:
     except Exception as e:
         if "Connection refused" in str(e) or "ConnectError" in str(e):
             console.print("[red]Error: Cannot connect to backend[/red]")
-            console.print("[dim]Is the server running? Start with: cli.py server start[/dim]")
+            console.print("[dim]Is the server running? Start with: cli_typer.py server start[/dim]")
         else:
             console.print(f"[red]Error: {e}[/red]")
         raise typer.Exit(1)
@@ -119,7 +119,7 @@ def ping() -> None:
     Returns success if backend responds, failure otherwise.
 
     Examples:
-        cli.py health ping
+        cli_typer.py health ping
     """
     asyncio.run(_ping())
 
@@ -155,7 +155,7 @@ def check() -> None:
     Does NOT require running server. Tests that modules load correctly.
 
     Examples:
-        cli.py health check
+        cli_typer.py health check
     """
     console.print("[bold]Checking application health...[/bold]\n")
 
@@ -179,13 +179,13 @@ def check() -> None:
     except Exception as e:
         checks.append(("YAML configuration", False, str(e)))
 
-    # Check 3: Environment settings
+    # Check 3: Secrets (.env)
     try:
         from modules.backend.core.config import get_settings
-        settings = get_settings()
-        checks.append(("Environment settings", True, f"Env: {settings.app_env}"))
+        get_settings()
+        checks.append(("Secrets (.env)", True, None))
     except Exception as e:
-        checks.append(("Environment settings", False, str(e)))
+        checks.append(("Secrets (.env)", False, str(e)))
 
     # Check 4: FastAPI app
     try:

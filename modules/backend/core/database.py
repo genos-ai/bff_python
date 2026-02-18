@@ -21,20 +21,19 @@ _async_session_factory: async_sessionmaker[AsyncSession] | None = None
 
 def _create_engine() -> Any:
     """Create async SQLAlchemy engine."""
-    from modules.backend.core.config import get_app_config, get_settings
+    from modules.backend.core.config import get_app_config, get_database_url
 
-    settings = get_settings()
     db_config = get_app_config().database
 
     engine = create_async_engine(
-        settings.database_url,
-        pool_size=db_config.get("pool_size"),
-        max_overflow=db_config.get("max_overflow"),
-        pool_timeout=db_config.get("pool_timeout"),
-        pool_recycle=db_config.get("pool_recycle"),
-        echo=db_config.get("echo"),
+        get_database_url(),
+        pool_size=db_config["pool_size"],
+        max_overflow=db_config["max_overflow"],
+        pool_timeout=db_config["pool_timeout"],
+        pool_recycle=db_config["pool_recycle"],
+        echo=db_config["echo"],
     )
-    logger.debug("Database engine created", extra={"url": settings.db_host})
+    logger.debug("Database engine created", extra={"host": db_config["host"]})
     return engine
 
 

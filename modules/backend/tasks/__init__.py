@@ -32,10 +32,10 @@ Usage (without Redis - testing):
 
 CLI Commands:
     # Start worker (executes tasks)
-    python example.py --action worker
+    python cli_click.py --action worker
 
     # Start scheduler (sends scheduled tasks to worker)
-    python example.py --action scheduler
+    python cli_click.py --action scheduler
 
     # Or directly with taskiq
     taskiq worker modules.backend.tasks.broker:broker

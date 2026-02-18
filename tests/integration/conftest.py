@@ -40,13 +40,15 @@ async def client(
     async def override_get_db_session() -> AsyncGenerator[AsyncSession, None]:
         yield db_session
 
-    # Patch get_settings BEFORE importing main to avoid module-level app creation
-    # This is needed because main.py has `app = create_app()` at module level
-    with patch("modules.backend.core.config.get_settings") as mock_config_settings, \
-         patch("modules.backend.core.security.get_settings") as mock_security_settings:
-        mock_settings = _create_mock_settings()
-        mock_config_settings.return_value = mock_settings
-        mock_security_settings.return_value = mock_settings
+    with patch("modules.backend.core.config.get_settings") as mock_secrets, \
+         patch("modules.backend.core.config.get_app_config") as mock_config, \
+         patch("modules.backend.core.security.get_settings") as mock_security_settings, \
+         patch("modules.backend.core.security.get_app_config") as mock_security_config:
+        mock_secrets.return_value = _create_mock_settings()
+        mock_security_settings.return_value = _create_mock_settings()
+        mock_app_config = _create_mock_app_config()
+        mock_config.return_value = mock_app_config
+        mock_security_config.return_value = mock_app_config
 
         from modules.backend.main import create_app
 
@@ -59,7 +61,6 @@ async def client(
         ) as test_client:
             yield test_client
 
-        # Clear overrides
         app.dependency_overrides.clear()
 
 
@@ -73,12 +74,15 @@ async def client_no_db() -> AsyncGenerator[AsyncClient, None]:
 
     Note: This requires mocking get_settings since no .env exists.
     """
-    # Patch get_settings BEFORE importing main to avoid module-level app creation
-    with patch("modules.backend.core.config.get_settings") as mock_config_settings, \
-         patch("modules.backend.core.security.get_settings") as mock_security_settings:
-        mock_settings = _create_mock_settings()
-        mock_config_settings.return_value = mock_settings
-        mock_security_settings.return_value = mock_settings
+    with patch("modules.backend.core.config.get_settings") as mock_secrets, \
+         patch("modules.backend.core.config.get_app_config") as mock_config, \
+         patch("modules.backend.core.security.get_settings") as mock_security_settings, \
+         patch("modules.backend.core.security.get_app_config") as mock_security_config:
+        mock_secrets.return_value = _create_mock_settings()
+        mock_security_settings.return_value = _create_mock_settings()
+        mock_app_config = _create_mock_app_config()
+        mock_config.return_value = mock_app_config
+        mock_security_config.return_value = mock_app_config
 
         from modules.backend.main import create_app
 
@@ -97,22 +101,63 @@ async def client_no_db() -> AsyncGenerator[AsyncClient, None]:
 
 
 def _create_mock_settings() -> Any:
-    """Create a mock settings object for testing."""
+    """Create a mock secrets object for testing."""
     from unittest.mock import MagicMock
 
     settings = MagicMock()
-    settings.app_name = "Test Application"
-    settings.app_env = "test"
-    settings.app_debug = True
-    settings.app_log_level = "WARNING"
-    settings.cors_origins = ["http://localhost:3000"]
-    settings.server_host = "127.0.0.1"
-    settings.server_port = 8000
+    settings.db_password = "test_pass"
+    settings.redis_password = ""
     settings.jwt_secret = "test-secret-key"
-    settings.jwt_algorithm = "HS256"
-    settings.jwt_access_token_expire_minutes = 30
-    settings.jwt_refresh_token_expire_days = 7
+    settings.api_key_salt = "test-salt"
+    settings.telegram_bot_token = ""
+    settings.telegram_webhook_secret = ""
     return settings
+
+
+def _create_mock_app_config() -> Any:
+    """Create a mock app config object for testing."""
+    from unittest.mock import MagicMock
+
+    config = MagicMock()
+    config.application = {
+        "name": "Test Application",
+        "version": "1.0.0",
+        "description": "Test application",
+        "environment": "test",
+        "debug": True,
+        "server": {"host": "127.0.0.1", "port": 8000},
+        "cors": {"origins": ["http://localhost:3000"]},
+        "telegram": {"webhook_path": "/webhook/telegram", "authorized_users": []},
+    }
+    config.database = {
+        "host": "localhost",
+        "port": 5432,
+        "name": "test_db",
+        "user": "test_user",
+        "pool_size": 5,
+        "max_overflow": 10,
+        "pool_timeout": 30,
+        "pool_recycle": 1800,
+        "echo": False,
+        "redis": {"host": "localhost", "port": 6379, "db": 0},
+    }
+    config.logging = {
+        "level": "WARNING",
+        "format": "console",
+        "handlers": {
+            "console": {"enabled": True},
+            "file": {"enabled": False, "max_bytes": 10485760, "backup_count": 5},
+        },
+    }
+    config.features = {}
+    config.security = {
+        "jwt": {
+            "algorithm": "HS256",
+            "access_token_expire_minutes": 30,
+            "refresh_token_expire_days": 7,
+        },
+    }
+    return config
 
 
 # =============================================================================

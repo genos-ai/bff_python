@@ -6,11 +6,11 @@ Example entry point demonstrating CLI patterns, logging, and configuration.
 All functionality is accessible through command-line options.
 
 Usage:
-    python example.py --help
-    python example.py --action server --verbose
-    python example.py --action health --debug
-    python example.py --action config
-    python example.py --action test --test-type unit
+    python cli_click.py --help
+    python cli_click.py --action server --verbose
+    python cli_click.py --action health --debug
+    python cli_click.py --action config
+    python cli_click.py --action test --test-type unit
 """
 
 import subprocess
@@ -126,30 +126,30 @@ def main(
     Examples:
 
         # Start development server
-        python example.py --action server --reload --verbose
+        python cli_click.py --action server --reload --verbose
 
         # Start background task worker
-        python example.py --action worker --verbose
+        python cli_click.py --action worker --verbose
 
         # Start task scheduler (for cron-based tasks)
-        python example.py --action scheduler --verbose
+        python cli_click.py --action scheduler --verbose
 
         # Check application health
-        python example.py --action health --debug
+        python cli_click.py --action health --debug
 
         # View loaded configuration
-        python example.py --action config
+        python cli_click.py --action config
 
         # Run unit tests with coverage
-        python example.py --action test --test-type unit --coverage
+        python cli_click.py --action test --test-type unit --coverage
 
         # Show application info
-        python example.py --action info
+        python cli_click.py --action info
 
         # Database migrations
-        python example.py --action migrate --migrate-action current
-        python example.py --action migrate --migrate-action upgrade
-        python example.py --action migrate --migrate-action autogenerate -m "add users table"
+        python cli_click.py --action migrate --migrate-action current
+        python cli_click.py --action migrate --migrate-action upgrade
+        python cli_click.py --action migrate --migrate-action autogenerate -m "add users table"
     """
     # Validate project root
     validate_project_root()
@@ -188,26 +188,20 @@ def main(
 
 def run_server(logger, host: str | None, port: int | None, reload: bool) -> None:
     """Start the FastAPI development server."""
-    from modules.backend.core.config import get_settings
+    from modules.backend.core.config import get_app_config
 
     try:
-        settings = get_settings()
+        server_config = get_app_config().application["server"]
     except Exception as e:
-        logger.error(
-            "Failed to load settings. Ensure config/.env exists and is configured.",
-            extra={"error": str(e)},
-        )
+        logger.error("Failed to load configuration.", extra={"error": str(e)})
         click.echo(
-            click.style(
-                "Error: Could not load settings. Copy config/.env.example to config/.env and configure it.",
-                fg="red",
-            ),
+            click.style("Error: Could not load config/settings/application.yaml.", fg="red"),
             err=True,
         )
         sys.exit(1)
 
-    server_host = host or settings.server_host
-    server_port = port or settings.server_port
+    server_host = host or server_config["host"]
+    server_port = port or server_config["port"]
 
     logger.info(
         "Starting server",
@@ -240,22 +234,14 @@ def run_worker(logger, workers: int) -> None:
     """Start the Taskiq background task worker."""
     logger.info("Starting background task worker", extra={"workers": workers})
 
-    # Verify Redis URL is configured
     try:
-        from modules.backend.core.config import get_settings
-        settings = get_settings()
-        redis_url = settings.redis_url
-        logger.debug("Redis URL configured", extra={"redis_url": redis_url.split("@")[-1]})
+        from modules.backend.core.config import get_redis_url
+        redis_url = get_redis_url()
+        logger.debug("Redis configured", extra={"redis_url": redis_url.split("@")[-1]})
     except Exception as e:
-        logger.error(
-            "Failed to load settings. Ensure config/.env exists with REDIS_URL.",
-            extra={"error": str(e)},
-        )
+        logger.error("Failed to load Redis configuration.", extra={"error": str(e)})
         click.echo(
-            click.style(
-                "Error: Could not load settings. Ensure REDIS_URL is configured in config/.env",
-                fg="red",
-            ),
+            click.style(f"Error: Redis not configured: {e}", fg="red"),
             err=True,
         )
         sys.exit(1)
@@ -283,22 +269,14 @@ def run_scheduler(logger) -> None:
     """Start the Taskiq task scheduler for cron-based tasks."""
     logger.info("Starting task scheduler")
 
-    # Verify Redis URL is configured
     try:
-        from modules.backend.core.config import get_settings
-        settings = get_settings()
-        redis_url = settings.redis_url
-        logger.debug("Redis URL configured", extra={"redis_url": redis_url.split("@")[-1]})
+        from modules.backend.core.config import get_redis_url
+        redis_url = get_redis_url()
+        logger.debug("Redis configured", extra={"redis_url": redis_url.split("@")[-1]})
     except Exception as e:
-        logger.error(
-            "Failed to load settings. Ensure config/.env exists with REDIS_URL.",
-            extra={"error": str(e)},
-        )
+        logger.error("Failed to load Redis configuration.", extra={"error": str(e)})
         click.echo(
-            click.style(
-                "Error: Could not load settings. Ensure REDIS_URL is configured in config/.env",
-                fg="red",
-            ),
+            click.style(f"Error: Redis not configured: {e}", fg="red"),
             err=True,
         )
         sys.exit(1)
@@ -369,9 +347,9 @@ def check_health(logger) -> None:
 
     # Check 3: Environment settings
     try:
-        settings = get_settings()
-        checks.append(("Environment settings", True, f"Env: {settings.app_env}"))
-        logger.debug("Settings loaded", extra={"env": settings.app_env})
+        app_env = get_app_config().application["environment"]
+        checks.append(("Environment settings", True, f"Env: {app_env}"))
+        logger.debug("Settings loaded", extra={"env": app_env})
     except Exception as e:
         checks.append(("Environment settings", False, str(e)))
         logger.warning("Environment settings not configured (expected for skeleton)")
@@ -601,14 +579,14 @@ def show_info(logger) -> None:
     click.echo("  --debug, -d       Enable DEBUG level logging")
     click.echo()
     click.echo("Examples:")
-    click.echo("  python example.py --action server --reload --verbose")
-    click.echo("  python example.py --action worker --workers 2 --verbose")
-    click.echo("  python example.py --action scheduler --verbose")
-    click.echo("  python example.py --action health --debug")
-    click.echo("  python example.py --action test --test-type unit --coverage")
-    click.echo("  python example.py --action migrate --migrate-action current")
-    click.echo("  python example.py --action migrate --migrate-action upgrade")
-    click.echo("  python example.py --action migrate --migrate-action autogenerate -m 'add users'")
+    click.echo("  python cli_click.py --action server --reload --verbose")
+    click.echo("  python cli_click.py --action worker --workers 2 --verbose")
+    click.echo("  python cli_click.py --action scheduler --verbose")
+    click.echo("  python cli_click.py --action health --debug")
+    click.echo("  python cli_click.py --action test --test-type unit --coverage")
+    click.echo("  python cli_click.py --action migrate --migrate-action current")
+    click.echo("  python cli_click.py --action migrate --migrate-action upgrade")
+    click.echo("  python cli_click.py --action migrate --migrate-action autogenerate -m 'add users'")
 
     logger.debug("Info displayed")
 

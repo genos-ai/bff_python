@@ -33,37 +33,9 @@ target_metadata = Base.metadata
 
 
 def get_database_url() -> str:
-    """
-    Get database URL from settings.
-
-    Falls back to environment variable if settings unavailable.
-    """
-    import os
-
-    # Try to load from settings
-    try:
-        from modules.backend.core.config import get_settings
-
-        settings = get_settings()
-        return (
-            f"postgresql+asyncpg://{settings.db_user}:{settings.db_password}"
-            f"@{settings.db_host}:{settings.db_port}/{settings.db_name}"
-        )
-    except Exception:
-        # Fall back to environment variable
-        url = os.environ.get("DATABASE_URL")
-        if url:
-            # Convert postgres:// to postgresql+asyncpg://
-            if url.startswith("postgres://"):
-                url = url.replace("postgres://", "postgresql+asyncpg://", 1)
-            elif url.startswith("postgresql://"):
-                url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
-            return url
-
-        raise RuntimeError(
-            "Database URL not configured. "
-            "Set up config/.env or DATABASE_URL environment variable."
-        )
+    """Get database URL from YAML config and secrets."""
+    from modules.backend.core.config import get_database_url as _get_database_url
+    return _get_database_url()
 
 
 def run_migrations_offline() -> None:

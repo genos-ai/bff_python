@@ -100,25 +100,12 @@ def mock_settings() -> MagicMock:
                 # Test code that uses settings
     """
     settings = MagicMock()
-    settings.app_name = "Test App"
-    settings.app_env = "test"
-    settings.app_debug = True
-    settings.app_log_level = "DEBUG"
-    settings.db_host = "localhost"
-    settings.db_port = 5432
-    settings.db_name = "test_db"
-    settings.db_user = "test_user"
     settings.db_password = "test_pass"
-    settings.database_url = "postgresql+asyncpg://test_user:test_pass@localhost/test_db"
-    settings.redis_url = "redis://localhost:6379/0"
+    settings.redis_password = ""
     settings.jwt_secret = "test-secret-key"
-    settings.jwt_algorithm = "HS256"
-    settings.jwt_access_token_expire_minutes = 30
-    settings.jwt_refresh_token_expire_days = 7
     settings.api_key_salt = "test-salt"
-    settings.server_host = "127.0.0.1"
-    settings.server_port = 8000
-    settings.cors_origins = []
+    settings.telegram_bot_token = ""
+    settings.telegram_webhook_secret = ""
     return settings
 
 
@@ -137,21 +124,42 @@ def mock_app_config() -> MagicMock:
         "name": "Test App",
         "version": "1.0.0",
         "description": "Test application",
+        "environment": "test",
+        "debug": True,
+        "server": {"host": "127.0.0.1", "port": 8000},
+        "cors": {"origins": []},
+        "telegram": {"webhook_path": "/webhook/telegram", "authorized_users": []},
     }
     config.database = {
+        "host": "localhost",
+        "port": 5432,
+        "name": "test_db",
+        "user": "test_user",
         "pool_size": 5,
         "max_overflow": 10,
         "pool_timeout": 30,
         "pool_recycle": 1800,
         "echo": False,
+        "redis": {"host": "localhost", "port": 6379, "db": 0},
     }
     config.logging = {
         "level": "DEBUG",
         "format": "console",
+        "handlers": {
+            "console": {"enabled": True},
+            "file": {"enabled": False, "max_bytes": 10485760, "backup_count": 5},
+        },
     }
     config.features = {
         "auth_require_email_verification": False,
         "api_detailed_errors": True,
+    }
+    config.security = {
+        "jwt": {
+            "algorithm": "HS256",
+            "access_token_expire_minutes": 30,
+            "refresh_token_expire_days": 7,
+        },
     }
     return config
 

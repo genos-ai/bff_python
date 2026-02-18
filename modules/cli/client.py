@@ -9,7 +9,7 @@ from typing import Any
 
 import httpx
 
-from modules.backend.core.config import get_settings
+from modules.backend.core.config import get_app_config
 from modules.backend.core.logging import get_logger, log_with_source
 
 logger = get_logger(__name__)
@@ -44,11 +44,13 @@ class APIClient:
         """
         if base_url is None:
             try:
-                settings = get_settings()
-                base_url = f"http://{settings.server_host}:{settings.server_port}"
-            except Exception:
-                # Default for development
-                base_url = "http://localhost:8000"
+                from modules.backend.core.config import get_app_config
+                server = get_app_config().application["server"]
+                base_url = f"http://{server['host']}:{server['port']}"
+            except Exception as e:
+                raise RuntimeError(
+                    "Could not determine server URL from config/settings/application.yaml"
+                ) from e
 
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout

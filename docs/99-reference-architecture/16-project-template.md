@@ -396,7 +396,7 @@ tests/
    ```
 7. Run database migrations:
    ```bash
-   python example.py --action migrate --migrate-action upgrade
+   python cli_click.py --action migrate --migrate-action upgrade
    ```
 8. Start development servers:
    ```bash

@@ -11,8 +11,8 @@ Architecture:
 - Sends X-Frontend-ID: cli header for log routing
 
 Usage:
-    python cli.py --help
-    python cli.py status
-    python cli.py health
-    python cli.py shell  # Interactive mode
+    python cli_typer.py --help
+    python cli_typer.py status
+    python cli_typer.py health
+    python cli_typer.py shell  # Interactive mode
 """

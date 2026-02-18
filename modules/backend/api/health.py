@@ -30,13 +30,12 @@ async def check_database() -> dict[str, Any]:
         Dict with status, latency, and optional error message
     """
     try:
-        from modules.backend.core.config import get_settings
+        from modules.backend.core.config import get_app_config
         from modules.backend.core.database import get_db_session
 
-        settings = get_settings()
+        db_config = get_app_config().database
 
-        # Only check if database is configured
-        if not settings.db_host or not settings.db_name:
+        if not db_config["host"] or not db_config["name"]:
             return {"status": "not_configured"}
 
         start = datetime.now(timezone.utc)
@@ -71,17 +70,13 @@ async def check_redis() -> dict[str, Any]:
         Dict with status, latency, and optional error message
     """
     try:
-        from modules.backend.core.config import get_settings
+        from modules.backend.core.config import get_redis_url
         import redis.asyncio as redis
 
-        settings = get_settings()
-
-        # Only check if Redis is configured
-        if not settings.redis_url:
-            return {"status": "not_configured"}
+        redis_url = get_redis_url()
 
         start = datetime.now(timezone.utc)
-        client = redis.from_url(settings.redis_url)
+        client = redis.from_url(redis_url)
         await client.ping()
         await client.aclose()
 
@@ -204,15 +199,15 @@ async def detailed_health_check() -> dict[str, Any]:
 
     # Add application info
     try:
-        from modules.backend.core.config import get_settings, get_app_config
-        settings = get_settings()
+        from modules.backend.core.config import get_app_config
         app_config = get_app_config()
+        app_settings = app_config.application
 
         app_info = {
-            "name": settings.app_name,
-            "env": settings.app_env,
-            "debug": settings.app_debug,
-            "version": app_config.application.get("version", "unknown"),
+            "name": app_settings["name"],
+            "env": app_settings["environment"],
+            "debug": app_settings["debug"],
+            "version": app_settings["version"],
         }
     except Exception:
         app_info = {"status": "not_configured"}

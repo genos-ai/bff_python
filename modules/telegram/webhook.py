@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Request, Response
 
-from modules.backend.core.config import get_settings
+from modules.backend.core.config import get_app_config, get_settings
 from modules.backend.core.logging import get_logger
 
 if TYPE_CHECKING:
@@ -41,9 +41,10 @@ def get_webhook_router(bot: "Bot", dp: "Dispatcher") -> APIRouter:
     from aiogram.types import Update
 
     settings = get_settings()
+    app_config = get_app_config()
     router = APIRouter(tags=["telegram"])
 
-    webhook_path = settings.telegram_webhook_path or "/webhook/telegram"
+    webhook_path = app_config.application["telegram"]["webhook_path"]
     webhook_secret = settings.telegram_webhook_secret
 
     @router.post(webhook_path)
@@ -111,6 +112,6 @@ def get_webhook_url(base_url: str) -> str:
     Returns:
         Full webhook URL
     """
-    settings = get_settings()
-    webhook_path = settings.telegram_webhook_path or "/webhook/telegram"
+    app_config = get_app_config()
+    webhook_path = app_config.application["telegram"]["webhook_path"]
     return f"{base_url.rstrip('/')}{webhook_path}"
