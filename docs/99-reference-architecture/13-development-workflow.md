@@ -128,7 +128,7 @@ CI/CD secrets stored in GitHub repository secrets:
 
 ## Testing
 
-See **17-testing-standards.md** for comprehensive testing guidance.
+See **16-testing-standards.md** for comprehensive testing guidance.
 
 ### Quick Reference
 

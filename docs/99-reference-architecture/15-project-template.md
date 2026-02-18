@@ -1,4 +1,4 @@
-# 16 - Project Template
+# 15 - Project Template
 
 *Version: 1.1.0*
 *Author: Architecture Team*
@@ -67,10 +67,15 @@ This document defines the standard directory structure for new projects. All pro
 │           ├── 11-typescript-coding-standards.md
 │           ├── 12-observability.md
 │           ├── 13-development-workflow.md
-│           ├── 14-deployment.md
-│           ├── 15-error-codes.md
-│           ├── 16-project-template.md
-│           └── 17-testing-standards.md
+│           ├── 14-error-codes.md
+│           ├── 15-project-template.md
+│           ├── 16-testing-standards.md
+│           ├── 17-security-standards.md
+│           ├── 18-data-protection.md
+│           ├── 19-background-tasks.md
+│           ├── 20-telegram-integration.md
+│           ├── 21-deployment-bare-metal.md
+│           └── 22-deployment-azure.md
 │
 ├── modules/
 │   ├── backend/
@@ -332,7 +337,7 @@ React frontend with Vite.
 
 Tests use a hybrid structure: test type at top level, source structure within.
 
-See **17-testing-standards.md** for complete testing guidance.
+See **16-testing-standards.md** for complete testing guidance.
 
 | Path | Purpose |
 |------|---------|

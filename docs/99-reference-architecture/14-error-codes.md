@@ -1,4 +1,4 @@
-# 15 - Error Code Registry
+# 14 - Error Codes
 
 *Version: 1.0.0*
 *Author: Architecture Team*

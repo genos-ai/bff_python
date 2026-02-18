@@ -310,7 +310,7 @@ LIMIT 50;
 
 ## Background Tasks
 
-For background task processing and scheduled jobs, see [20-background-tasks.md](20-background-tasks.md).
+For background task processing and scheduled jobs, see [19-background-tasks.md](19-background-tasks.md).
 
 Summary:
 - **Standard**: Taskiq with Redis

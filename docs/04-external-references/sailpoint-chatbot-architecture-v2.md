@@ -675,10 +675,10 @@ async def test_search_tool_called_for_access_query():
 | 08-llm-integration.md | Add PydanticAI agent patterns, `RunContext` DI, `prepare_tools`, LangGraph for HITL only |
 | 09-authentication.md | Add Entra ID authentication flow, MSAL integration |
 | 12-observability.md | Add Langfuse integration, OTEL for agent tracing, per-agent cost attribution |
-| 14-deployment.md | See 14b-deployment-azure.md (already created) |
-| 18-security-standards.md | Add prompt injection mitigation, tool filtering, MCP security considerations |
+| 14-deployment.md | See docs/99-reference-architecture/22-deployment-azure.md |
+| 17-security-standards.md | Add prompt injection mitigation, tool filtering, MCP security considerations |
 | 06-event-architecture.md | Add SailPoint event trigger webhook consumption, agent-as-consumer pattern |
-| 20-background-tasks.md | Add Taskiq as agent execution layer, `agent_executor.py` pattern |
+| 19-background-tasks.md | Add Taskiq as agent execution layer, `agent_executor.py` pattern |
 
 ---
 

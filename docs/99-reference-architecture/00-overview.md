@@ -6,11 +6,12 @@
 
 ## Changelog
 
-- 1.5.0 (2026-02-13): Added 21-telegram-integration.md for Telegram bot integration (aiogram v3)
+- 1.6.0 (2026-02-18): Renumbered docs; moved deployment to 21-22; added 22-deployment-azure.md
+- 1.5.0 (2026-02-13): Added 20-telegram-integration.md for Telegram bot integration (aiogram v3)
 - 1.4.0 (2025-01-29): Added data/ directory structure for file-based data storage
 - 1.3.0 (2025-01-29): Added Python environment management guide (uv vs conda) to 13-development-workflow.md
-- 1.2.0 (2025-01-29): Added 17-testing-standards.md with comprehensive testing guidance
-- 1.1.0 (2025-01-27): Added 16-project-template.md with complete project structure
+- 1.2.0 (2025-01-29): Added 16-testing-standards.md with comprehensive testing guidance
+- 1.1.0 (2025-01-27): Added 15-project-template.md with complete project structure
 - 1.0.0 (2025-01-27): Initial generic architecture standards
 
 ---
@@ -38,16 +39,17 @@ These apply to all projects without exception:
 | 03-backend-architecture.md | Backend framework, service layer, API design |
 | 04-module-structure.md | Module organization and inter-module communication |
 | 09-authentication.md | Authentication and authorization |
-| 18-security-standards.md | Application security (OWASP, cryptography, input handling) |
-| 19-data-protection.md | Data protection and privacy (PII, GDPR, retention) |
+| 17-security-standards.md | Application security (OWASP, cryptography, input handling) |
+| 18-data-protection.md | Data protection and privacy (PII, GDPR, retention) |
 | 10-python-coding-standards.md | Python file organization, imports, CLI, error handling |
 | 12-observability.md | Logging, monitoring, debugging, alerting |
 | 13-development-workflow.md | Git workflow, CI/CD, testing, versioning |
-| 14-deployment.md | Self-hosted deployment, scaling path |
-| 15-error-codes.md | Error code registry, client handling guide |
-| 16-project-template.md | Standard project directory structure |
-| 17-testing-standards.md | Test organization, fixtures, coverage |
-| 20-background-tasks.md | Background tasks and scheduling (Taskiq) |
+| 14-error-codes.md | Error code registry, client handling guide |
+| 15-project-template.md | Standard project directory structure |
+| 16-testing-standards.md | Test organization, fixtures, coverage |
+| 19-background-tasks.md | Background tasks and scheduling (Taskiq) |
+| 21-deployment-bare-metal.md | Self-hosted deployment (Ubuntu, systemd, nginx) |
+| 22-deployment-azure.md | Azure managed services deployment |
 
 ### Optional Modules
 
@@ -60,7 +62,7 @@ Adopt these based on project requirements:
 | 07-frontend-architecture.md | Projects with web frontends |
 | 08-llm-integration.md | Projects using LLM/AI capabilities |
 | 11-typescript-coding-standards.md | Projects with TypeScript/React frontends |
-| 21-telegram-integration.md | Projects with Telegram bot interfaces |
+| 20-telegram-integration.md | Projects with Telegram bot interfaces |
 
 ---
 
@@ -137,7 +139,7 @@ Architecture choices favor technologies with extensive AI training data. This ma
 | 07-frontend-architecture.md | Building a web UI |
 | 08-llm-integration.md | Integrating AI/LLM capabilities |
 | 11-typescript-coding-standards.md | Building React frontend |
-| 21-telegram-integration.md | Building Telegram bot interface |
+| 20-telegram-integration.md | Building Telegram bot interface |
 
 ### Module Dependencies
 

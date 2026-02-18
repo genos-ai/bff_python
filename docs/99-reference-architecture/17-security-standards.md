@@ -1,4 +1,4 @@
-# 18 - Security Standards
+# 17 - Security Standards
 
 *Version: 1.0.0*
 *Author: Architecture Team*
@@ -12,7 +12,7 @@
 
 ## Purpose
 
-This document defines security standards for application development. It complements 09-authentication.md (which covers authentication and authorization) and 19-data-protection.md (which covers privacy and PII handling).
+This document defines security standards for application development. It complements 09-authentication.md (which covers authentication and authorization) and 18-data-protection.md (which covers privacy and PII handling).
 
 Security is not optional. Every requirement in this document applies to all projects.
 
@@ -31,7 +31,7 @@ Security is not optional. Every requirement in this document applies to all proj
 | Authentication Failures | 09-authentication.md |
 | Software or Data Integrity Failures | This document (Integrity Verification) |
 | Security Logging and Alerting Failures | 12-observability.md, 09-authentication.md (Audit Logging) |
-| Mishandling of Exceptional Conditions | 15-error-codes.md, This document (Error Handling) |
+| Mishandling of Exceptional Conditions | 14-error-codes.md, This document (Error Handling) |
 
 ---
 
@@ -626,7 +626,7 @@ This document provides technical security controls. For specific compliance fram
 | Framework | Additional Requirements |
 |-----------|------------------------|
 | SOC 2 | Access reviews, change management, vendor management |
-| GDPR | See 19-data-protection.md |
+| GDPR | See 18-data-protection.md |
 | HIPAA | PHI handling, BAAs, additional audit requirements |
 | PCI DSS | Cardholder data isolation, quarterly scans |
 

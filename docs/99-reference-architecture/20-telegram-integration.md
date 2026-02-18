@@ -1,4 +1,4 @@
-# Telegram Bot Integration Guide
+# 20 - Telegram Integration
 
 > Reference documentation for integrating Telegram bots using aiogram v3 with FastAPI.
 
@@ -761,10 +761,10 @@ success_count = sum(1 for r in results if r.success)
 
 ## Related Documentation
 
-- [Background Tasks](20-background-tasks.md) - Taskiq integration
+- [Background Tasks](19-background-tasks.md) - Taskiq integration
 - [Observability](12-observability.md) - Logging and monitoring
 - [Authentication](09-authentication.md) - Security patterns
-- [Research Reference](../04-external-references/telegram_bot_control_interface.md) - Original research document
+- [Research Reference](../04-external-references/telegram.md) - Original research document
 
 ---
 

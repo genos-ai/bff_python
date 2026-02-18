@@ -189,7 +189,7 @@ Storage: `data/` directory in project root.
 
 Access pattern: Direct file I/O or DuckDB for queries.
 
-See **16-project-template.md** for directory structure details.
+See **15-project-template.md** for directory structure details.
 
 ---
 

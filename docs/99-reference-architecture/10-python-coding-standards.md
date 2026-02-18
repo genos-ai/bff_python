@@ -452,7 +452,7 @@ def utc_now() -> datetime:
 
 ## Testing Standards
 
-See **17-testing-standards.md** for comprehensive testing guidance including:
+See **16-testing-standards.md** for comprehensive testing guidance including:
 
 - Test directory structure (hybrid approach)
 - Test types (unit, integration, e2e)
