@@ -863,6 +863,26 @@ async def chat_stream(payload: ChatPayload) -> StreamingResponse:
     return StreamingResponse(generate(), media_type="text/event-stream")
 ```
 
+### Streaming (Built-in Adapters)
+
+PydanticAI ships with protocol-specific adapters for chat UIs. Use these instead of manual SSE when integrating with Vercel AI SDK or AG-UI compatible frontends:
+
+```python
+from starlette.requests import Request
+from starlette.responses import Response
+from pydantic_ai import Agent
+from pydantic_ai.ui.vercel_ai import VercelAIAdapter
+
+agent = Agent('openai:gpt-4o', instructions='Helpful assistant.')
+
+@router.post("/chat/vercel")
+async def chat_vercel(request: Request) -> Response:
+    """Vercel AI SDK compatible streaming endpoint."""
+    return await VercelAIAdapter.dispatch_request(request, agent=agent)
+```
+
+The `AGUIAdapter` and `AGUIApp` provide AG-UI protocol support (CopilotKit and similar frameworks). For custom streaming, `agent.run_stream()` returns an async context manager with `.stream_text(delta=True)` for direct SSE integration.
+
 ### Scheduled (Taskiq Cron)
 
 ```python
