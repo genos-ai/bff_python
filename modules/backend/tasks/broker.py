@@ -36,9 +36,9 @@ def create_broker() -> "ListQueueBroker":
     from modules.backend.core.config import get_app_config, get_redis_url
 
     redis_url = get_redis_url()
-    broker_config = get_app_config().database["redis"]["broker"]
-    queue_name = broker_config["queue_name"]
-    result_expiry = broker_config["result_expiry_seconds"]
+    broker_config = get_app_config().database.redis.broker
+    queue_name = broker_config.queue_name
+    result_expiry = broker_config.result_expiry_seconds
 
     result_backend = RedisAsyncResultBackend(
         redis_url=redis_url,

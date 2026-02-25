@@ -26,20 +26,10 @@ import structlog
 PROJECT_ROOT = Path(__file__).parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from modules.backend.core.config import validate_project_root
 from modules.backend.core.logging import get_logger, setup_logging
 
 LONG_RUNNING_SERVICES = {"server", "worker", "scheduler", "telegram-poll"}
-
-
-def validate_project_root() -> Path:
-    """Validate that we're running from the project root."""
-    if not (PROJECT_ROOT / ".project_root").exists():
-        click.echo(
-            click.style("Error: .project_root not found. Run from project root.", fg="red"),
-            err=True,
-        )
-        sys.exit(1)
-    return PROJECT_ROOT
 
 
 def _find_process_on_port(port: int) -> list[int]:
@@ -80,7 +70,7 @@ def _get_service_port(port: int | None) -> int:
     if port is not None:
         return port
     from modules.backend.core.config import get_app_config
-    return get_app_config().application["server"]["port"]
+    return get_app_config().application.server.port
 
 
 @click.command()
@@ -254,7 +244,7 @@ def run_server(logger, host: str | None, port: int | None, reload: bool) -> None
     from modules.backend.core.config import get_app_config
 
     try:
-        server_config = get_app_config().application["server"]
+        server_config = get_app_config().application.server
     except Exception as e:
         logger.error("Failed to load configuration.", extra={"error": str(e)})
         click.echo(
@@ -263,8 +253,8 @@ def run_server(logger, host: str | None, port: int | None, reload: bool) -> None
         )
         sys.exit(1)
 
-    server_host = host or server_config["host"]
-    server_port = port or server_config["port"]
+    server_host = host or server_config.host
+    server_port = port or server_config.port
 
     logger.info(
         "Starting server",
@@ -351,7 +341,7 @@ def run_scheduler(logger) -> None:
 
         click.echo("Registered scheduled tasks:")
         for task_name, config in SCHEDULED_TASKS.items():
-            schedule = config["schedule"][0].get("cron", "N/A")
+            schedule = config["schedule"][0]["cron"]
             click.echo(f"  - {task_name}: {schedule}")
         click.echo()
     except Exception as e:
@@ -388,7 +378,7 @@ def run_telegram_poll(logger) -> None:
     from modules.backend.core.config import get_app_config
 
     features = get_app_config().features
-    if not features.get("channel_telegram_enabled"):
+    if not features.channel_telegram_enabled:
         click.echo(
             click.style(
                 "Error: channel_telegram_enabled is false in features.yaml. "
@@ -451,7 +441,7 @@ def check_health(logger) -> None:
     # Check 2: Configuration loading
     try:
         app_config = get_app_config()
-        app_name = app_config.application.get("name")
+        app_name = app_config.application.name
         checks.append(("YAML configuration", True, f"App: {app_name}"))
         logger.debug("Configuration loaded", extra={"app_name": app_name})
     except Exception as e:
@@ -460,7 +450,7 @@ def check_health(logger) -> None:
 
     # Check 3: Environment settings
     try:
-        app_env = get_app_config().application["environment"]
+        app_env = get_app_config().application.environment
         checks.append(("Environment settings", True, f"Env: {app_env}"))
         logger.debug("Settings loaded", extra={"env": app_env})
     except Exception as e:
@@ -527,17 +517,17 @@ def show_config(logger) -> None:
 
         click.echo("Application Settings (from YAML):")
         click.echo("-" * 40)
-        for key, value in app_config.application.items():
+        for key, value in app_config.application.model_dump().items():
             click.echo(f"  {key}: {value}")
 
         click.echo("\nDatabase Settings (from YAML):")
         click.echo("-" * 40)
-        for key, value in app_config.database.items():
+        for key, value in app_config.database.model_dump().items():
             click.echo(f"  {key}: {value}")
 
         click.echo("\nLogging Settings (from YAML):")
         click.echo("-" * 40)
-        for key, value in app_config.logging.items():
+        for key, value in app_config.logging.model_dump().items():
             if isinstance(value, dict):
                 click.echo(f"  {key}:")
                 for k, v in value.items():
@@ -547,7 +537,7 @@ def show_config(logger) -> None:
 
         click.echo("\nFeature Flags (from YAML):")
         click.echo("-" * 40)
-        for key, value in app_config.features.items():
+        for key, value in app_config.features.model_dump().items():
             click.echo(f"  {key}: {value}")
 
         logger.info("Configuration displayed successfully")
@@ -659,9 +649,9 @@ def show_info(logger) -> None:
     try:
         from modules.backend.core.config import get_app_config
         app_config = get_app_config()
-        click.echo(f"Name: {app_config.application.get('name')}")
-        click.echo(f"Version: {app_config.application.get('version')}")
-        click.echo(f"Description: {app_config.application.get('description')}")
+        click.echo(f"Name: {app_config.application.name}")
+        click.echo(f"Version: {app_config.application.version}")
+        click.echo(f"Description: {app_config.application.description}")
     except Exception as e:
         logger.error(
             "Failed to load application configuration",

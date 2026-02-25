@@ -26,17 +26,17 @@ _app: FastAPI | None = None
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan manager."""
     app_config = get_app_config()
-    setup_logging(level=app_config.logging["level"])
+    setup_logging(level=app_config.logging.level)
 
-    if app_config.features.get("security_startup_checks_enabled", True):
+    if app_config.features.security_startup_checks_enabled:
         from modules.gateway.security.startup_checks import run_startup_checks
         run_startup_checks()
 
     logger.info(
         "Application starting",
         extra={
-            "app_name": app_config.application["name"],
-            "env": app_config.application["environment"],
+            "app_name": app_config.application.name,
+            "env": app_config.application.environment,
         },
     )
     yield
@@ -49,17 +49,17 @@ def create_app() -> FastAPI:
     app_settings = app_config.application
 
     app = FastAPI(
-        title=app_settings["name"],
-        description=app_settings["description"],
-        version=app_settings["version"],
-        docs_url="/docs" if app_settings["debug"] else None,
-        redoc_url="/redoc" if app_settings["debug"] else None,
+        title=app_settings.name,
+        description=app_settings.description,
+        version=app_settings.version,
+        docs_url="/docs" if app_settings.debug else None,
+        redoc_url="/redoc" if app_settings.debug else None,
         lifespan=lifespan,
     )
 
     app.add_middleware(RequestContextMiddleware)
 
-    cors_origins = app_settings["cors"]["origins"]
+    cors_origins = app_settings.cors.origins
     if cors_origins:
         app.add_middleware(
             CORSMiddleware,
@@ -83,7 +83,7 @@ def _mount_channel_adapters(app: FastAPI, app_config) -> None:
     """Mount enabled channel adapters via the gateway registry."""
     features = app_config.features
 
-    if features.get("channel_telegram_enabled"):
+    if features.channel_telegram_enabled:
         try:
             from modules.telegram.bot import get_bot, get_dispatcher
             from modules.telegram.webhook import get_webhook_router

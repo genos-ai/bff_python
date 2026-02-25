@@ -44,10 +44,10 @@ def start(
         cli_typer_example.py server start --host 0.0.0.0 --port 8080
     """
     app_config = _get_app_config()
-    server_config = app_config.application["server"]
+    server_config = app_config.application.server
 
-    server_host = host or server_config["host"]
-    server_port = port or server_config["port"]
+    server_host = host or server_config.host
+    server_port = port or server_config.port
 
     cmd = [
         sys.executable, "-m", "uvicorn",
@@ -136,7 +136,7 @@ def scheduler() -> None:
 
         console.print("[bold]Registered scheduled tasks:[/bold]")
         for task_name, config in SCHEDULED_TASKS.items():
-            schedule = config["schedule"][0].get("cron", "N/A")
+            schedule = config["schedule"][0]["cron"]
             console.print(f"  [cyan]{task_name}[/cyan]: {schedule}")
         console.print()
     except Exception as e:

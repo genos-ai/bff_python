@@ -87,7 +87,7 @@ class AuthMiddleware(BaseMiddleware):
         user_id = user.id
 
         # Check if user is authorized
-        authorized_users = app_config.application["telegram"]["authorized_users"]
+        authorized_users = app_config.application.telegram.authorized_users
 
         # If no authorized users configured, allow all (development mode)
         if not authorized_users:

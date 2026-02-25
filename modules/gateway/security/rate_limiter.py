@@ -83,8 +83,9 @@ class GatewayRateLimiter:
     def _get_limits(self, channel: str) -> dict | None:
         """Load rate limits for a channel from security.yaml."""
         security_config = get_app_config().security
-        rate_limiting = security_config.get("rate_limiting", {})
-        return rate_limiting.get(channel)
+        rate_limiting = security_config.rate_limiting
+        channel_config = getattr(rate_limiting, channel, None)
+        return channel_config.model_dump() if channel_config else None
 
     def _check_window(
         self,

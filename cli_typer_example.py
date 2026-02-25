@@ -43,7 +43,6 @@ Options:
 """
 
 import asyncio
-import logging
 import sys
 from pathlib import Path
 
@@ -55,14 +54,7 @@ project_root = Path(__file__).resolve().parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
-
-def _validate_project_root() -> None:
-    """Validate that we're running from the project root."""
-    if not (project_root / ".project_root").exists():
-        console.print("[red]Error: .project_root not found. Run from project root.[/red]")
-        raise typer.Exit(1)
-
-
+from modules.backend.core.config import validate_project_root
 from modules.cli.commands import db_app, health_app, server_app, system_app, test_app
 
 # Create main app
@@ -116,8 +108,7 @@ def main(
     Server management, database migrations, testing, health checks, and more.
     Built with Typer for type-safe commands and Rich for formatted output.
     """
-    # Validate project root
-    _validate_project_root()
+    validate_project_root()
 
     # Configure logging based on flags
     if debug:

@@ -108,10 +108,10 @@ def _get_agent() -> Agent[HealthAgentDeps, HealthCheckResult]:
         """Get application metadata (name, version, environment, debug mode)."""
         app = ctx.deps.app_config.application
         return {
-            "name": app["name"],
-            "version": app["version"],
-            "environment": app["environment"],
-            "debug": app["debug"],
+            "name": app.name,
+            "version": app.version,
+            "environment": app.environment,
+            "debug": app.debug,
         }
 
     _agent = agent

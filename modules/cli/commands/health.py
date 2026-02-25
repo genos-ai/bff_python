@@ -174,7 +174,7 @@ def check() -> None:
     try:
         from modules.backend.core.config import get_app_config
         app_config = get_app_config()
-        app_name = app_config.application.get("name")
+        app_name = app_config.application.name
         checks.append(("YAML configuration", True, f"App: {app_name}"))
     except Exception as e:
         checks.append(("YAML configuration", False, str(e)))

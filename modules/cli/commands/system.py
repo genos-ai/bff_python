@@ -32,9 +32,9 @@ def info() -> None:
         app_config = get_app_config()
 
         console.print(Panel(
-            f"[bold]{app_config.application.get('name', 'N/A')}[/bold]\n"
-            f"Version: {app_config.application.get('version', 'N/A')}\n"
-            f"Description: {app_config.application.get('description', 'N/A')}",
+            f"[bold]{app_config.application.name}[/bold]\n"
+            f"Version: {app_config.application.version}\n"
+            f"Description: {app_config.application.description}",
             title="Application Info",
         ))
 
@@ -87,9 +87,10 @@ def config(
         raise typer.Exit(1)
 
 
-def _display_config_section(name: str, data: dict) -> None:
+def _display_config_section(name: str, data) -> None:
     """Display a configuration section as a tree."""
     tree = Tree(f"[bold cyan]{name}[/bold cyan]")
+    dumped = data.model_dump() if hasattr(data, "model_dump") else data
 
     def add_items(parent: Tree, items: dict, indent: int = 0) -> None:
         for key, value in items.items():
@@ -99,7 +100,7 @@ def _display_config_section(name: str, data: dict) -> None:
             else:
                 parent.add(f"[cyan]{key}[/cyan]: {value}")
 
-    add_items(tree, data)
+    add_items(tree, dumped)
     console.print(tree)
 
 
@@ -115,18 +116,18 @@ def env() -> None:
 
         app_config = get_app_config()
         app = app_config.application
-        server = app["server"]
+        server = app.server
 
         table = Table(title="Environment Settings", show_header=True)
         table.add_column("Setting", style="cyan")
         table.add_column("Value")
 
-        table.add_row("App Name", app["name"])
-        table.add_row("Environment", app["environment"])
-        table.add_row("Debug Mode", str(app["debug"]))
-        table.add_row("Log Level", app_config.logging["level"])
-        table.add_row("Server Host", server["host"])
-        table.add_row("Server Port", str(server["port"]))
+        table.add_row("App Name", app.name)
+        table.add_row("Environment", app.environment)
+        table.add_row("Debug Mode", str(app.debug))
+        table.add_row("Log Level", app_config.logging.level)
+        table.add_row("Server Host", server.host)
+        table.add_row("Server Port", str(server.port))
 
         console.print(table)
 
@@ -145,7 +146,7 @@ def version() -> None:
         from modules.backend.core.config import get_app_config
 
         app_config = get_app_config()
-        version = app_config.application.get("version", "unknown")
+        version = app_config.application.version
 
         console.print(f"[bold]{version}[/bold]")
 

@@ -19,7 +19,6 @@ import asyncio
 import json
 import sys
 from pathlib import Path
-from uuid import uuid4
 
 import click
 import structlog
@@ -27,22 +26,11 @@ import structlog
 PROJECT_ROOT = Path(__file__).parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from modules.backend.core.config import get_app_config
+from modules.backend.core.config import get_server_base_url, validate_project_root
 from modules.backend.core.logging import get_logger, setup_logging
 
 
-def validate_project_root() -> Path:
-    """Validate that we're running from the project root."""
-    if not (PROJECT_ROOT / ".project_root").exists():
-        click.echo(
-            click.style("Error: .project_root not found. Run from project root.", fg="red"),
-            err=True,
-        )
-        sys.exit(1)
-    return PROJECT_ROOT
-
-
-async def send_message(base_url: str, timeout: float, message: str, session_id: str, agent: str | None, raw: bool, verbose: bool) -> int:
+async def send_message(base_url: str, timeout: float, message: str, agent: str | None, raw: bool, verbose: bool) -> int:
     """Send a message to the agent coordinator and display the response."""
     import httpx
 
@@ -187,12 +175,11 @@ async def list_agents_cmd(base_url: str, timeout: float, raw: bool) -> int:
 @click.option("--agent", "-a", default=None, help="Target a specific agent by name (bypass routing).")
 @click.option("--list-agents", is_flag=True, help="List all available agents.")
 @click.option("--ping", is_flag=True, help="Ping the health endpoint directly (no agent).")
-@click.option("--session-id", default=None, help="Session ID for conversation continuity.")
 @click.option("--raw", is_flag=True, help="Output raw JSON response.")
 @click.option("--verbose", "-v", is_flag=True, help="Show agent name, components, and advice.")
 @click.option("--debug", "-d", is_flag=True, help="Enable debug logging.")
 @click.option("--port", default=None, type=int, help="Backend server port (overrides config).")
-def main(message: str | None, agent: str | None, list_agents: bool, ping: bool, session_id: str | None, raw: bool, verbose: bool, debug: bool, port: int | None) -> None:
+def main(message: str | None, agent: str | None, list_agents: bool, ping: bool, raw: bool, verbose: bool, debug: bool, port: int | None) -> None:
     """
     Send a message to platform agents.
 
@@ -227,23 +214,21 @@ def main(message: str | None, agent: str | None, list_agents: bool, ping: bool, 
         sys.exit(1)
 
     try:
-        server = get_app_config().application["server"]
-        host = server["host"]
-        server_port = port or server["port"]
-        timeout = float(get_app_config().application["timeouts"]["external_api"])
+        base_url, timeout = get_server_base_url()
+        if port:
+            from modules.backend.core.config import get_app_config
+            host = get_app_config().application.server.host
+            base_url = f"http://{host}:{port}"
     except Exception as e:
         click.echo(click.style(f"Error loading config: {e}", fg="red"), err=True)
         sys.exit(1)
-
-    base_url = f"http://{host}:{server_port}"
-    sid = session_id or str(uuid4())
 
     if list_agents:
         exit_code = asyncio.run(list_agents_cmd(base_url, timeout, raw))
     elif ping:
         exit_code = asyncio.run(ping_backend(base_url, timeout, raw))
     else:
-        exit_code = asyncio.run(send_message(base_url, timeout, message, sid, agent, raw, verbose))
+        exit_code = asyncio.run(send_message(base_url, timeout, message, agent, raw, verbose))
 
     sys.exit(exit_code)
 

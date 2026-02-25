@@ -14,18 +14,18 @@ class TestAPIClient:
     @pytest.fixture
     def client(self) -> APIClient:
         """Create a test client."""
-        return APIClient(base_url="http://test:8000")
+        return APIClient(source="test", base_url="http://test:8000")
 
     @pytest.mark.asyncio
     async def test_client_initialization(self, client: APIClient) -> None:
         """Test client initializes with correct base URL."""
         assert client.base_url == "http://test:8000"
-        assert client.timeout == 30.0
+        assert client.source == "test"
 
     @pytest.mark.asyncio
     async def test_client_strips_trailing_slash(self) -> None:
         """Test client strips trailing slash from base URL."""
-        client = APIClient(base_url="http://test:8000/")
+        client = APIClient(source="test", base_url="http://test:8000/")
         assert client.base_url == "http://test:8000"
 
     @pytest.mark.asyncio
@@ -63,7 +63,7 @@ class TestAPIClient:
         """Test client includes X-Frontend-ID header for source identification."""
         # Access internal client to check headers
         internal_client = await client._get_client()
-        assert internal_client.headers.get("X-Frontend-ID") == "cli"
+        assert internal_client.headers.get("X-Frontend-ID") == "test"
         await client.close()
 
     @pytest.mark.asyncio

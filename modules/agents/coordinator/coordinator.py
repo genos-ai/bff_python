@@ -32,7 +32,7 @@ def _load_agent_registry() -> dict[str, dict]:
     for path in sorted(agents_dir.glob("*.yaml")):
         with open(path) as f:
             config = yaml.safe_load(f) or {}
-        if config.get("enabled", True):
+        if config["enabled"]:
             registry[config["agent_name"]] = config
 
     return registry
@@ -49,9 +49,9 @@ def list_agents() -> list[dict[str, Any]]:
     return [
         {
             "agent_name": config["agent_name"],
-            "description": config.get("description", ""),
-            "keywords": config.get("keywords", []),
-            "tools": config.get("tools", []),
+            "description": config["description"],
+            "keywords": config["keywords"],
+            "tools": config["tools"],
         }
         for config in registry.values()
     ]
@@ -125,7 +125,7 @@ def _route(user_input: str) -> str:
     registry = _load_agent_registry()
 
     for agent_name, config in registry.items():
-        keywords = config.get("keywords", [])
+        keywords = config["keywords"]
         for keyword in keywords:
             if keyword in text:
                 logger.debug(

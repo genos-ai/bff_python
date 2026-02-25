@@ -34,7 +34,7 @@ async def check_database() -> dict[str, Any]:
 
         db_config = get_app_config().database
 
-        if not db_config["host"] or not db_config["name"]:
+        if not db_config.host or not db_config.name:
             return {"status": "not_configured"}
 
         start = utc_now()
@@ -202,10 +202,10 @@ async def detailed_health_check() -> dict[str, Any]:
         app_settings = app_config.application
 
         app_info = {
-            "name": app_settings["name"],
-            "env": app_settings["environment"],
-            "debug": app_settings["debug"],
-            "version": app_settings["version"],
+            "name": app_settings.name,
+            "env": app_settings.environment,
+            "debug": app_settings.debug,
+            "version": app_settings.version,
         }
     except Exception:
         app_info = {"status": "not_configured"}

@@ -43,7 +43,7 @@ class TestAuthMiddleware:
         event = self._create_mock_update(123456789, "testuser")
 
         mock_app_config = MagicMock()
-        mock_app_config.application = {"telegram": {"authorized_users": [123456789, 987654321]}}
+        mock_app_config.application.telegram.authorized_users = [123456789, 987654321]
 
         with patch(
             "modules.telegram.middlewares.auth.get_app_config",
@@ -65,7 +65,7 @@ class TestAuthMiddleware:
         event = self._create_mock_update(999999999, "unauthorized")
 
         mock_app_config = MagicMock()
-        mock_app_config.application = {"telegram": {"authorized_users": [123456789]}}
+        mock_app_config.application.telegram.authorized_users = [123456789]
 
         with patch(
             "modules.telegram.middlewares.auth.get_app_config",
@@ -87,7 +87,7 @@ class TestAuthMiddleware:
         event = self._create_mock_update(123456789, "anyuser")
 
         mock_app_config = MagicMock()
-        mock_app_config.application = {"telegram": {"authorized_users": []}}
+        mock_app_config.application.telegram.authorized_users = []
 
         with patch(
             "modules.telegram.middlewares.auth.get_app_config",
@@ -110,7 +110,7 @@ class TestAuthMiddleware:
         event = self._create_mock_update(123456789, "admin")
 
         mock_app_config = MagicMock()
-        mock_app_config.application = {"telegram": {"authorized_users": [123456789, 987654321]}}
+        mock_app_config.application.telegram.authorized_users = [123456789, 987654321]
 
         with patch(
             "modules.telegram.middlewares.auth.get_app_config",
@@ -132,7 +132,7 @@ class TestAuthMiddleware:
         event = self._create_mock_update(987654321, "trader")
 
         mock_app_config = MagicMock()
-        mock_app_config.application = {"telegram": {"authorized_users": [123456789, 987654321]}}
+        mock_app_config.application.telegram.authorized_users = [123456789, 987654321]
 
         with patch(
             "modules.telegram.middlewares.auth.get_app_config",

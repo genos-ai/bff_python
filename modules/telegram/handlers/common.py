@@ -130,12 +130,10 @@ async def cmd_status(message: Message) -> None:
     """
     import httpx
 
-    from modules.backend.core.config import get_app_config
+    from modules.backend.core.config import get_server_base_url
 
     try:
-        server = get_app_config().application["server"]
-        base_url = f"http://{server['host']}:{server['port']}"
-        timeout = float(get_app_config().application["timeouts"]["external_api"])
+        base_url, timeout = get_server_base_url()
 
         async with httpx.AsyncClient(
             base_url=base_url,

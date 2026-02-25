@@ -31,7 +31,7 @@ def run_startup_checks() -> None:
     settings = get_settings()
     security_config = app_config.security
     features = app_config.features
-    environment = app_config.application.get("environment", "development")
+    environment = app_config.application.environment
     is_production = environment == "production"
 
     errors: list[str] = []
@@ -57,16 +57,16 @@ def run_startup_checks() -> None:
 
 def _check_secret_strength(settings, security_config: dict, errors: list[str]) -> None:
     """Validate that secrets meet minimum length requirements."""
-    validation = security_config.get("secrets_validation", {})
+    validation = security_config.secrets_validation
 
-    jwt_min = validation.get("jwt_secret_min_length", 32)
+    jwt_min = validation.jwt_secret_min_length
     if len(settings.jwt_secret) < jwt_min:
         errors.append(
             f"JWT_SECRET is {len(settings.jwt_secret)} chars, "
             f"minimum is {jwt_min}"
         )
 
-    salt_min = validation.get("api_key_salt_min_length", 16)
+    salt_min = validation.api_key_salt_min_length
     if len(settings.api_key_salt) < salt_min:
         errors.append(
             f"API_KEY_SALT is {len(settings.api_key_salt)} chars, "
@@ -76,7 +76,7 @@ def _check_secret_strength(settings, security_config: dict, errors: list[str]) -
 
 def _check_channel_secrets(settings, features: dict, errors: list[str]) -> None:
     """Validate that enabled channels have required secrets configured."""
-    if features.get("channel_telegram_enabled"):
+    if features.channel_telegram_enabled:
         if not settings.telegram_bot_token:
             errors.append(
                 "channel_telegram_enabled is true but TELEGRAM_BOT_TOKEN is empty"
@@ -93,18 +93,18 @@ def _check_production_safety(app_config, is_production: bool, errors: list[str])
         return
 
     app = app_config.application
-    if app.get("debug"):
+    if app.debug:
         errors.append("debug is true in production environment")
 
-    if app_config.features.get("api_detailed_errors"):
+    if app_config.features.api_detailed_errors:
         errors.append("api_detailed_errors is true in production environment")
 
-    if app.get("docs_enabled"):
+    if app.docs_enabled:
         errors.append("docs_enabled is true in production environment")
 
-    cors_config = app_config.security.get("cors", {})
-    if cors_config.get("enforce_in_production"):
-        origins = app.get("cors", {}).get("origins", [])
+    cors_config = app_config.security.cors
+    if cors_config.enforce_in_production:
+        origins = app.cors.origins
         localhost_origins = [o for o in origins if "localhost" in o]
         if localhost_origins:
             errors.append(
@@ -112,27 +112,17 @@ def _check_production_safety(app_config, is_production: bool, errors: list[str])
             )
 
 
-def _check_channel_allowlists(app_config, features: dict, errors: list[str]) -> None:
+def _check_channel_allowlists(app_config, features, errors: list[str]) -> None:
     """Validate that enabled channels with allowlist policy have non-empty allowlists."""
-    gateway_config = {}
-    try:
-        from modules.backend.core.config import load_yaml_config
-        gateway_config = load_yaml_config("gateway.yaml")
-    except FileNotFoundError:
-        return
+    gateway = app_config.gateway
+    policy = gateway.default_policy
 
-    channels = gateway_config.get("channels", {})
-    default_policy = gateway_config.get("default_policy", "deny")
-
-    for channel_name, channel_conf in channels.items():
+    for channel_name, channel_conf in gateway.channels.items():
         feature_key = f"channel_{channel_name}_enabled"
-        if not features.get(feature_key):
+        if not getattr(features, feature_key, False):
             continue
 
-        policy = default_policy
-        allowlist = channel_conf.get("allowlist", [])
-
-        if policy == "allowlist" and not allowlist:
+        if policy == "allowlist" and not channel_conf.allowlist:
             errors.append(
                 f"Channel '{channel_name}' is enabled with 'allowlist' policy "
                 f"but allowlist is empty"

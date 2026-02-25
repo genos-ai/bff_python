@@ -310,7 +310,7 @@ def register_scheduled_tasks() -> dict[str, Any]:
         task_kwargs = {
             "task_name": task_name,
             "schedule": config["schedule"],
-            "retry_on_error": config.get("retry_on_error", False),
+            "retry_on_error": config["retry_on_error"],
         }
 
         if "max_retries" in config:

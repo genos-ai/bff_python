@@ -1,0 +1,22 @@
+# =============================================================================
+# Gateway Configuration
+# =============================================================================
+# Available options:
+#   default_policy    - Access policy for all channels (string: allow_all|allowlist|deny)
+#                       allow_all  = no gateway-level restrictions (development)
+#                       allowlist  = only users in the channel's allowlist (production)
+#                       deny       = block all traffic through gateway
+#   channels          - Per-channel configuration (object, keyed by channel name)
+#     <channel_name>  - Channel name matching features.yaml (e.g., telegram, slack)
+#       allowlist     - User IDs allowed when policy is "allowlist" (list of integers)
+#
+#   Note: Channel-level auth (e.g., telegram.authorized_users in application.yaml)
+#   is enforced separately by channel middlewares. This gateway-level policy is an
+#   additional layer checked at startup.
+# =============================================================================
+
+default_policy: "deny"
+
+channels:
+  telegram:
+    allowlist: []

@@ -34,7 +34,8 @@ class TestCheckDatabase:
         from modules.backend.api.health import check_database
 
         mock_app_config = MagicMock()
-        mock_app_config.database = {"host": "", "name": "test"}
+        mock_app_config.database.host = ""
+        mock_app_config.database.name = "test"
 
         with patch(
             "modules.backend.core.config.get_app_config",
@@ -50,7 +51,8 @@ class TestCheckDatabase:
         from modules.backend.api.health import check_database
 
         mock_app_config = MagicMock()
-        mock_app_config.database = {"host": "localhost", "name": ""}
+        mock_app_config.database.host = "localhost"
+        mock_app_config.database.name = ""
 
         with patch(
             "modules.backend.core.config.get_app_config",
@@ -66,7 +68,8 @@ class TestCheckDatabase:
         from modules.backend.api.health import check_database
 
         mock_app_config = MagicMock()
-        mock_app_config.database = {"host": "localhost", "name": "test"}
+        mock_app_config.database.host = "localhost"
+        mock_app_config.database.name = "test"
 
         mock_session = AsyncMock()
         mock_session.execute = AsyncMock()
@@ -94,7 +97,8 @@ class TestCheckDatabase:
         from modules.backend.api.health import check_database
 
         mock_app_config = MagicMock()
-        mock_app_config.database = {"host": "localhost", "name": "test"}
+        mock_app_config.database.host = "localhost"
+        mock_app_config.database.name = "test"
 
         async def mock_get_db_session_error():
             raise Exception("Connection refused")
@@ -249,12 +253,10 @@ class TestDetailedHealthCheck:
         from modules.backend.api.health import detailed_health_check
 
         mock_app_config = MagicMock()
-        mock_app_config.application = {
-            "name": "test-app",
-            "environment": "test",
-            "debug": False,
-            "version": "1.0.0",
-        }
+        mock_app_config.application.name = "test-app"
+        mock_app_config.application.environment = "test"
+        mock_app_config.application.debug = False
+        mock_app_config.application.version = "1.0.0"
 
         with patch(
             "modules.backend.api.health.check_database",
@@ -283,12 +285,10 @@ class TestDetailedHealthCheck:
         from modules.backend.api.health import detailed_health_check
 
         mock_app_config = MagicMock()
-        mock_app_config.application = {
-            "name": "test-app",
-            "environment": "test",
-            "debug": False,
-            "version": "1.0.0",
-        }
+        mock_app_config.application.name = "test-app"
+        mock_app_config.application.environment = "test"
+        mock_app_config.application.debug = False
+        mock_app_config.application.version = "1.0.0"
 
         with patch(
             "modules.backend.api.health.check_database",

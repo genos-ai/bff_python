@@ -44,7 +44,7 @@ def get_webhook_router(bot: "Bot", dp: "Dispatcher") -> APIRouter:
     app_config = get_app_config()
     router = APIRouter(tags=["telegram"])
 
-    webhook_path = app_config.application["telegram"]["webhook_path"]
+    webhook_path = app_config.application.telegram.webhook_path
     webhook_secret = settings.telegram_webhook_secret
 
     @router.post(webhook_path)
@@ -113,5 +113,5 @@ def get_webhook_url(base_url: str) -> str:
         Full webhook URL
     """
     app_config = get_app_config()
-    webhook_path = app_config.application["telegram"]["webhook_path"]
+    webhook_path = app_config.application.telegram.webhook_path
     return f"{base_url.rstrip('/')}{webhook_path}"

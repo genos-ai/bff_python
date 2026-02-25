@@ -1,0 +1,231 @@
+"""
+Configuration Schemas.
+
+Pydantic models defining the expected structure of each YAML config file.
+Used by AppConfig to validate configuration at load time. If a YAML file
+has missing keys, wrong types, or unknown fields, a clear ValidationError
+is raised at startup instead of a cryptic KeyError deep in application code.
+
+Each top-level class corresponds to one file in config/settings/:
+    ApplicationSchema  → application.yaml
+    DatabaseSchema     → database.yaml
+    LoggingSchema      → logging.yaml
+    FeaturesSchema     → features.yaml
+    SecuritySchema     → security.yaml
+"""
+
+from pydantic import BaseModel, ConfigDict
+
+
+class _StrictBase(BaseModel):
+    """Base with extra='forbid' so unknown YAML keys are caught immediately."""
+
+    model_config = ConfigDict(extra="forbid")
+
+
+# =============================================================================
+# application.yaml
+# =============================================================================
+
+
+class ServerSchema(_StrictBase):
+    host: str
+    port: int
+
+
+class CorsSchema(_StrictBase):
+    origins: list[str]
+
+
+class PaginationSchema(_StrictBase):
+    default_limit: int
+    max_limit: int
+
+
+class TimeoutsSchema(_StrictBase):
+    database: int
+    external_api: int
+    background: int
+
+
+class TelegramAppSchema(_StrictBase):
+    webhook_path: str
+    authorized_users: list[int]
+
+
+class ApplicationSchema(_StrictBase):
+    name: str
+    version: str
+    description: str
+    environment: str
+    debug: bool
+    api_prefix: str
+    docs_enabled: bool
+    server: ServerSchema
+    cors: CorsSchema
+    pagination: PaginationSchema
+    timeouts: TimeoutsSchema
+    telegram: TelegramAppSchema
+
+
+# =============================================================================
+# database.yaml
+# =============================================================================
+
+
+class BrokerSchema(_StrictBase):
+    queue_name: str
+    result_expiry_seconds: int
+
+
+class RedisSchema(_StrictBase):
+    host: str
+    port: int
+    db: int
+    broker: BrokerSchema
+
+
+class DatabaseSchema(_StrictBase):
+    host: str
+    port: int
+    name: str
+    user: str
+    pool_size: int
+    max_overflow: int
+    pool_timeout: int
+    pool_recycle: int
+    echo: bool
+    echo_pool: bool
+    redis: RedisSchema
+
+
+# =============================================================================
+# logging.yaml
+# =============================================================================
+
+
+class ConsoleHandlerSchema(_StrictBase):
+    enabled: bool
+
+
+class FileHandlerSchema(_StrictBase):
+    enabled: bool
+    path: str
+    max_bytes: int
+    backup_count: int
+
+
+class HandlersSchema(_StrictBase):
+    console: ConsoleHandlerSchema
+    file: FileHandlerSchema
+
+
+class LoggingSchema(_StrictBase):
+    level: str
+    format: str
+    handlers: HandlersSchema
+
+
+# =============================================================================
+# features.yaml
+# =============================================================================
+
+
+class FeaturesSchema(_StrictBase):
+    auth_require_email_verification: bool
+    auth_allow_api_key_creation: bool
+    auth_rate_limit_enabled: bool
+    auth_require_api_authentication: bool
+    api_detailed_errors: bool
+    api_request_logging: bool
+    channel_telegram_enabled: bool
+    channel_slack_enabled: bool
+    channel_discord_enabled: bool
+    channel_whatsapp_enabled: bool
+    gateway_enabled: bool
+    gateway_websocket_enabled: bool
+    gateway_pairing_enabled: bool
+    agent_coordinator_enabled: bool
+    agent_streaming_enabled: bool
+    mcp_enabled: bool
+    a2a_enabled: bool
+    security_startup_checks_enabled: bool
+    security_headers_enabled: bool
+    security_cors_enforce_production: bool
+    experimental_background_tasks_enabled: bool
+
+
+# =============================================================================
+# security.yaml
+# =============================================================================
+
+
+class JwtSchema(_StrictBase):
+    algorithm: str
+    access_token_expire_minutes: int
+    refresh_token_expire_days: int
+    audience: str
+
+
+class ApiRateLimitSchema(_StrictBase):
+    requests_per_minute: int
+    requests_per_hour: int
+
+
+class ChannelRateLimitSchema(_StrictBase):
+    messages_per_minute: int
+    messages_per_hour: int
+
+
+class RateLimitingSchema(_StrictBase):
+    api: ApiRateLimitSchema
+    telegram: ChannelRateLimitSchema
+    websocket: ChannelRateLimitSchema
+
+
+class RequestLimitsSchema(_StrictBase):
+    max_body_size_bytes: int
+    max_header_size_bytes: int
+
+
+class SecurityHeadersSchema(_StrictBase):
+    x_content_type_options: str
+    x_frame_options: str
+    referrer_policy: str
+    hsts_enabled: bool
+    hsts_max_age: int
+
+
+class SecretsValidationSchema(_StrictBase):
+    jwt_secret_min_length: int
+    api_key_salt_min_length: int
+    webhook_secret_min_length: int
+
+
+class CorsEnforcementSchema(_StrictBase):
+    enforce_in_production: bool
+    allow_methods: list[str]
+    allow_headers: list[str]
+
+
+class SecuritySchema(_StrictBase):
+    jwt: JwtSchema
+    rate_limiting: RateLimitingSchema
+    request_limits: RequestLimitsSchema
+    headers: SecurityHeadersSchema
+    secrets_validation: SecretsValidationSchema
+    cors: CorsEnforcementSchema
+
+
+# =============================================================================
+# gateway.yaml
+# =============================================================================
+
+
+class GatewayChannelSchema(_StrictBase):
+    allowlist: list[int]
+
+
+class GatewaySchema(_StrictBase):
+    default_policy: str
+    channels: dict[str, GatewayChannelSchema]

@@ -9,19 +9,10 @@ from typing import Any
 
 import httpx
 
-from modules.backend.core.config import get_app_config
+from modules.backend.core.config import get_server_base_url
 from modules.backend.core.logging import get_logger, log_with_source
 
 logger = get_logger(__name__)
-
-
-def _get_client_config() -> tuple[str, float]:
-    """Load base URL and timeout from application.yaml."""
-    app_config = get_app_config()
-    server = app_config.application["server"]
-    base_url = f"http://{server['host']}:{server['port']}"
-    timeout = float(app_config.application["timeouts"]["external_api"])
-    return base_url, timeout
 
 
 class APIClient:
@@ -35,29 +26,28 @@ class APIClient:
     - Error handling with context
 
     Usage:
-        client = APIClient()
+        client = APIClient(source="cli")
         response = await client.get("/health")
         response = await client.post("/api/v1/users", json={"name": "test"})
     """
 
-    def __init__(self, base_url: str | None = None, timeout: float | None = None):
+    def __init__(
+        self,
+        source: str,
+        base_url: str | None = None,
+        timeout: float | None = None,
+    ):
         """
         Initialize the API client.
 
         Args:
+            source: Frontend identifier for X-Frontend-ID header (cli, chat, tui, telegram).
             base_url: Backend API base URL. If None, reads from config/settings/application.yaml.
             timeout: Request timeout in seconds. If None, reads from config/settings/application.yaml.
         """
-        try:
-            config_base_url, config_timeout = _get_client_config()
-        except Exception as e:
-            if base_url is None:
-                raise RuntimeError(
-                    "Could not determine server URL from config/settings/application.yaml"
-                ) from e
-            config_base_url = base_url
-            config_timeout = timeout if timeout is not None else 30.0
+        config_base_url, config_timeout = get_server_base_url()
 
+        self.source = source
         self.base_url = (base_url or config_base_url).rstrip("/")
         self.timeout = timeout if timeout is not None else config_timeout
         self._client: httpx.AsyncClient | None = None
@@ -68,7 +58,7 @@ class APIClient:
             self._client = httpx.AsyncClient(
                 base_url=self.base_url,
                 timeout=self.timeout,
-                headers={"X-Frontend-ID": "cli"},
+                headers={"X-Frontend-ID": self.source},
             )
         return self._client
 
@@ -102,7 +92,7 @@ class APIClient:
 
         log_with_source(
             logger,
-            "cli",
+            self.source,
             "debug",
             "API request",
             method=method,
@@ -114,7 +104,7 @@ class APIClient:
 
             log_with_source(
                 logger,
-                "cli",
+                self.source,
                 "debug",
                 "API response",
                 method=method,
@@ -127,7 +117,7 @@ class APIClient:
         except httpx.HTTPError as e:
             log_with_source(
                 logger,
-                "cli",
+                self.source,
                 "error",
                 "API request failed",
                 method=method,
@@ -161,11 +151,11 @@ class APIClient:
 _client: APIClient | None = None
 
 
-def get_api_client() -> APIClient:
+def get_api_client(source: str = "cli") -> APIClient:
     """Get or create the API client singleton."""
     global _client
     if _client is None:
-        _client = APIClient()
+        _client = APIClient(source=source)
     return _client
 
 
