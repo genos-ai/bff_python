@@ -478,6 +478,9 @@ def main() -> None:
     else:
         setup_logging(level="WARNING", format_type="console")
 
+    import structlog.contextvars
+    structlog.contextvars.bind_contextvars(frontend="web")
+
     logger.debug("Starting TUI", extra={"debug": debug, "verbose": verbose})
 
     app = AgentTUI(debug=debug)

@@ -59,6 +59,12 @@ LOG_SOURCES = {
     "unknown",   # Unidentified source
 }
 
+# Frontend IDs that map to a different log source file
+FRONTEND_SOURCE_MAP = {
+    "chat": "cli",
+    "tui": "web",
+}
+
 # Module-level state
 _file_handlers: dict[str, logging.Handler] = {}
 _logs_dir: Path | None = None
@@ -167,20 +173,27 @@ class SourceRoutingHandler(logging.Handler):
         Determine the log source from the record.
 
         Priority:
-        1. Explicit 'source' field
-        2. 'frontend' field from request context
-        3. Logger name pattern matching
-        4. Default to 'unknown'
+        1. Explicit 'source' field on the record
+        2. 'frontend' field on the record (set by some middlewares)
+        3. 'frontend' from structlog contextvars (set by RequestContextMiddleware)
+        4. Logger name pattern matching
+        5. Default to 'unknown'
         """
-        # Check for explicit source
         if hasattr(record, "source") and record.source in LOG_SOURCES:
             return record.source
 
-        # Check for frontend from request context
-        if hasattr(record, "frontend") and record.frontend in LOG_SOURCES:
-            return record.frontend
+        if hasattr(record, "frontend"):
+            frontend = FRONTEND_SOURCE_MAP.get(record.frontend, record.frontend)
+            if frontend in LOG_SOURCES:
+                return frontend
 
-        # Pattern matching on logger name
+        ctx_vars = structlog.contextvars.get_contextvars()
+        ctx_frontend = ctx_vars.get("frontend")
+        if ctx_frontend:
+            mapped = FRONTEND_SOURCE_MAP.get(ctx_frontend, ctx_frontend)
+            if mapped in LOG_SOURCES:
+                return mapped
+
         logger_name = record.name.lower()
 
         if "task" in logger_name or "scheduler" in logger_name:
@@ -189,8 +202,11 @@ class SourceRoutingHandler(logging.Handler):
             return "database"
         if "telegram" in logger_name:
             return "telegram"
+        if "cli" in logger_name:
+            return "cli"
+        if "agent" in logger_name:
+            return "internal"
 
-        # Default
         return "unknown"
 
     def emit(self, record: logging.LogRecord) -> None:

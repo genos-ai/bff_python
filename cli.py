@@ -166,6 +166,10 @@ def main(
         log_level = "WARNING"
 
     setup_logging(level=log_level, format_type="console")
+
+    import structlog.contextvars
+    structlog.contextvars.bind_contextvars(frontend="cli")
+
     logger = get_logger(__name__)
 
     logger.debug("Starting application", extra={"action": action, "log_level": log_level})

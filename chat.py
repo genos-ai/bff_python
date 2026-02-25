@@ -218,6 +218,9 @@ def main(message: str | None, agent: str | None, list_agents: bool, ping: bool, 
     else:
         setup_logging(level="WARNING", format_type="console")
 
+    import structlog.contextvars
+    structlog.contextvars.bind_contextvars(frontend="cli")
+
     if not message and not ping and not list_agents:
         click.echo("Error: provide --message, --ping, or --list-agents.", err=True)
         click.echo("Run 'python chat.py --help' for usage.", err=True)
