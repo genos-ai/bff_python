@@ -336,9 +336,6 @@ class AgentTUI(App):
             loading.update(f"[red]Error loading registry: {e}[/]")
 
 
-logger = get_logger(__name__)
-
-
 @click.command()
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output (INFO level logging).")
 @click.option("--debug", "-d", is_flag=True, help="Enable debug output (DEBUG level logging).")
@@ -355,6 +352,7 @@ def main(verbose: bool, debug: bool) -> None:
 
     structlog.contextvars.bind_contextvars(source="tui")
 
+    logger = get_logger(__name__)
     logger.debug("Starting TUI", extra={"debug": debug, "verbose": verbose})
 
     tui_app = AgentTUI(debug=debug)

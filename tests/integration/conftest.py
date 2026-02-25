@@ -101,63 +101,146 @@ async def client_no_db() -> AsyncGenerator[AsyncClient, None]:
 
 
 def _create_mock_settings() -> Any:
-    """Create a mock secrets object for testing."""
+    """Create a real Settings-like object for testing with typed fields."""
     from unittest.mock import MagicMock
 
     settings = MagicMock()
     settings.db_password = "test_pass"
     settings.redis_password = ""
-    settings.jwt_secret = "test-secret-key"
-    settings.api_key_salt = "test-salt"
+    settings.jwt_secret = "test-secret-key-that-is-long-enough-for-validation"
+    settings.api_key_salt = "test-salt-long-enough"
     settings.telegram_bot_token = ""
     settings.telegram_webhook_secret = ""
+    settings.anthropic_api_key = ""
     return settings
 
 
 def _create_mock_app_config() -> Any:
-    """Create a mock app config object for testing."""
-    from unittest.mock import MagicMock
+    """
+    Create a test AppConfig using real Pydantic schema instances.
 
-    config = MagicMock()
-    config.application = {
-        "name": "Test Application",
-        "version": "1.0.0",
-        "description": "Test application",
-        "environment": "test",
-        "debug": True,
-        "server": {"host": "127.0.0.1", "port": 8000},
-        "cors": {"origins": ["http://localhost:3000"]},
-        "telegram": {"webhook_path": "/webhook/telegram", "authorized_users": []},
-    }
-    config.database = {
-        "host": "localhost",
-        "port": 5432,
-        "name": "test_db",
-        "user": "test_user",
-        "pool_size": 5,
-        "max_overflow": 10,
-        "pool_timeout": 30,
-        "pool_recycle": 1800,
-        "echo": False,
-        "redis": {"host": "localhost", "port": 6379, "db": 0},
-    }
-    config.logging = {
-        "level": "WARNING",
-        "format": "console",
-        "handlers": {
-            "console": {"enabled": True},
-            "file": {"enabled": False, "max_bytes": 10485760, "backup_count": 5},
-        },
-    }
-    config.features = {}
-    config.security = {
-        "jwt": {
-            "algorithm": "HS256",
-            "access_token_expire_minutes": 30,
-            "refresh_token_expire_days": 7,
-        },
-    }
-    return config
+    Uses the actual schema classes from config_schema.py so that
+    integration tests exercise the same attribute access paths as
+    production code.
+    """
+    from modules.backend.core.config_schema import (
+        ApplicationSchema,
+        DatabaseSchema,
+        FeaturesSchema,
+        GatewaySchema,
+        LoggingSchema,
+        SecuritySchema,
+    )
+
+    class TestAppConfig:
+        """Test-specific AppConfig with real schema instances."""
+
+        def __init__(self) -> None:
+            self.application = ApplicationSchema(
+                name="Test Application",
+                version="1.0.0",
+                description="Test application",
+                environment="test",
+                debug=True,
+                api_prefix="/api",
+                docs_enabled=True,
+                server={"host": "127.0.0.1", "port": 8000},
+                cors={"origins": ["http://localhost:3000"]},
+                pagination={"default_limit": 50, "max_limit": 100},
+                timeouts={"database": 10, "external_api": 30, "background": 120},
+                telegram={"webhook_path": "/webhook/telegram", "authorized_users": []},
+            )
+            self.database = DatabaseSchema(
+                host="localhost",
+                port=5432,
+                name="test_db",
+                user="test_user",
+                pool_size=5,
+                max_overflow=10,
+                pool_timeout=30,
+                pool_recycle=1800,
+                echo=False,
+                echo_pool=False,
+                redis={
+                    "host": "localhost",
+                    "port": 6379,
+                    "db": 0,
+                    "broker": {"queue_name": "test_tasks", "result_expiry_seconds": 3600},
+                },
+            )
+            self.logging = LoggingSchema(
+                level="WARNING",
+                format="console",
+                handlers={
+                    "console": {"enabled": True},
+                    "file": {
+                        "enabled": False,
+                        "path": "logs/test.jsonl",
+                        "max_bytes": 10485760,
+                        "backup_count": 5,
+                    },
+                },
+            )
+            self.features = FeaturesSchema(
+                auth_require_email_verification=False,
+                auth_allow_api_key_creation=True,
+                auth_rate_limit_enabled=False,
+                auth_require_api_authentication=False,
+                api_detailed_errors=True,
+                api_request_logging=False,
+                channel_telegram_enabled=False,
+                channel_slack_enabled=False,
+                channel_discord_enabled=False,
+                channel_whatsapp_enabled=False,
+                gateway_enabled=False,
+                gateway_websocket_enabled=False,
+                gateway_pairing_enabled=False,
+                agent_coordinator_enabled=False,
+                agent_streaming_enabled=False,
+                mcp_enabled=False,
+                a2a_enabled=False,
+                security_startup_checks_enabled=False,
+                security_headers_enabled=False,
+                security_cors_enforce_production=False,
+                experimental_background_tasks_enabled=False,
+            )
+            self.security = SecuritySchema(
+                jwt={
+                    "algorithm": "HS256",
+                    "access_token_expire_minutes": 30,
+                    "refresh_token_expire_days": 7,
+                    "audience": "bff-api",
+                },
+                rate_limiting={
+                    "api": {"requests_per_minute": 60, "requests_per_hour": 1000},
+                    "telegram": {"messages_per_minute": 30, "messages_per_hour": 500},
+                    "websocket": {"messages_per_minute": 60, "messages_per_hour": 1000},
+                },
+                request_limits={"max_body_size_bytes": 1048576, "max_header_size_bytes": 8192},
+                headers={
+                    "x_content_type_options": "nosniff",
+                    "x_frame_options": "DENY",
+                    "referrer_policy": "strict-origin-when-cross-origin",
+                    "hsts_enabled": False,
+                    "hsts_max_age": 31536000,
+                },
+                secrets_validation={
+                    "jwt_secret_min_length": 32,
+                    "api_key_salt_min_length": 16,
+                    "webhook_secret_min_length": 16,
+                },
+                cors={
+                    "enforce_in_production": False,
+                    "allow_methods": ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+                    "allow_headers": ["Authorization", "Content-Type"],
+                },
+            )
+            self.gateway = GatewaySchema(
+                default_policy="allow_all",
+                channels={"telegram": {"allowlist": []}},
+            )
+
+    return TestAppConfig()
 
 
 # =============================================================================

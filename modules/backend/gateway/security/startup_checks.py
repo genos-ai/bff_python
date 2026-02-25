@@ -8,7 +8,8 @@ application refuses to start with a clear error message.
 Called during FastAPI lifespan initialization.
 """
 
-from modules.backend.core.config import get_app_config, get_settings
+from modules.backend.core.config import AppConfig, Settings, get_app_config, get_settings
+from modules.backend.core.config_schema import FeaturesSchema, SecuritySchema
 from modules.backend.core.logging import get_logger
 
 logger = get_logger(__name__)
@@ -55,7 +56,7 @@ def run_startup_checks() -> None:
     )
 
 
-def _check_secret_strength(settings, security_config: dict, errors: list[str]) -> None:
+def _check_secret_strength(settings: Settings, security_config: SecuritySchema, errors: list[str]) -> None:
     """Validate that secrets meet minimum length requirements."""
     validation = security_config.secrets_validation
 
@@ -74,7 +75,7 @@ def _check_secret_strength(settings, security_config: dict, errors: list[str]) -
         )
 
 
-def _check_channel_secrets(settings, features: dict, errors: list[str]) -> None:
+def _check_channel_secrets(settings: Settings, features: FeaturesSchema, errors: list[str]) -> None:
     """Validate that enabled channels have required secrets configured."""
     if features.channel_telegram_enabled:
         if not settings.telegram_bot_token:
@@ -87,7 +88,7 @@ def _check_channel_secrets(settings, features: dict, errors: list[str]) -> None:
             )
 
 
-def _check_production_safety(app_config, is_production: bool, errors: list[str]) -> None:
+def _check_production_safety(app_config: AppConfig, is_production: bool, errors: list[str]) -> None:
     """Validate production environment safety constraints."""
     if not is_production:
         return
@@ -112,7 +113,7 @@ def _check_production_safety(app_config, is_production: bool, errors: list[str])
             )
 
 
-def _check_channel_allowlists(app_config, features, errors: list[str]) -> None:
+def _check_channel_allowlists(app_config: AppConfig, features: FeaturesSchema, errors: list[str]) -> None:
     """Validate that enabled channels with allowlist policy have non-empty allowlists."""
     gateway = app_config.gateway
     policy = gateway.default_policy

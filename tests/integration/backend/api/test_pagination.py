@@ -135,27 +135,34 @@ class TestPaginatedListEndpoint:
         client: AsyncClient,
         db_session: AsyncSession,
     ):
-        """Should use default limit of 20."""
-        # Create 25 notes
-        for i in range(25):
+        """Should use default limit from config (50) when no limit specified."""
+        # Create 60 notes (more than default_limit of 50)
+        for i in range(60):
             db_session.add(Note(title=f"Note {i}"))
         await db_session.flush()
 
         response = await client.get("/api/v1/notes")
 
         data = response.json()
-        assert len(data["data"]) == 20
-        assert data["pagination"]["limit"] == 20
+        assert len(data["data"]) == 50
+        assert data["pagination"]["limit"] == 50
 
     @pytest.mark.asyncio
-    async def test_limit_validation_max(
+    async def test_limit_capped_at_max(
         self,
         client: AsyncClient,
+        db_session: AsyncSession,
     ):
-        """Should reject limit over 100."""
+        """Should cap limit at max_limit from config (100) instead of rejecting."""
+        for i in range(5):
+            db_session.add(Note(title=f"Note {i}"))
+        await db_session.flush()
+
         response = await client.get("/api/v1/notes?limit=150")
 
-        assert response.status_code == 422
+        assert response.status_code == 200
+        data = response.json()
+        assert data["pagination"]["limit"] == 100
 
     @pytest.mark.asyncio
     async def test_limit_validation_min(

@@ -41,11 +41,10 @@ class PaginationParams:
 
 
 def get_pagination_params(
-    limit: int = Query(
-        default=20,
+    limit: int | None = Query(
+        default=None,
         ge=1,
-        le=100,
-        description="Maximum number of items to return",
+        description="Maximum number of items to return (defaults to config value)",
     ),
     offset: int = Query(
         default=0,
@@ -60,6 +59,9 @@ def get_pagination_params(
     """
     FastAPI dependency for pagination parameters.
 
+    Defaults and limits are loaded from config/settings/application.yaml
+    (pagination.default_limit and pagination.max_limit).
+
     Usage:
         @router.get("/items")
         async def list_items(
@@ -67,7 +69,13 @@ def get_pagination_params(
         ):
             ...
     """
-    return PaginationParams(limit=limit, offset=offset, cursor=cursor)
+    from modules.backend.core.config import get_app_config
+
+    pagination_config = get_app_config().application.pagination
+    effective_limit = limit if limit is not None else pagination_config.default_limit
+    effective_limit = min(effective_limit, pagination_config.max_limit)
+
+    return PaginationParams(limit=effective_limit, offset=offset, cursor=cursor)
 
 
 # =============================================================================

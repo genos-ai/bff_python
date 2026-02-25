@@ -52,8 +52,8 @@ def create_app() -> FastAPI:
         title=app_settings.name,
         description=app_settings.description,
         version=app_settings.version,
-        docs_url="/docs" if app_settings.debug else None,
-        redoc_url="/redoc" if app_settings.debug else None,
+        docs_url="/docs" if app_settings.docs_enabled else None,
+        redoc_url="/redoc" if app_settings.docs_enabled else None,
         lifespan=lifespan,
     )
 

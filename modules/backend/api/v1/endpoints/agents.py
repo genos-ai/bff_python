@@ -4,8 +4,6 @@ Agent Endpoints.
 REST API for agent interaction: chat, direct invocation, and registry listing.
 """
 
-from typing import Any
-
 from pydantic import BaseModel, Field
 
 from fastapi import APIRouter
