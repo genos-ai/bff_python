@@ -36,30 +36,18 @@ class TestLoggingConfigLoading:
         """Should load configuration from logging.yaml."""
         from modules.backend.core import logging as logging_module
 
-        # Create a temporary config structure
-        config_dir = tmp_path / "config" / "settings"
-        config_dir.mkdir(parents=True)
+        test_config = {
+            "level": "DEBUG",
+            "format": "console",
+            "handlers": {
+                "console": {"enabled": True},
+                "file": {"enabled": False, "max_bytes": 5242880, "backup_count": 3},
+            },
+        }
 
-        logging_yaml = config_dir / "logging.yaml"
-        logging_yaml.write_text("""
-level: "DEBUG"
-format: "console"
-handlers:
-  console:
-    enabled: true
-  file:
-    enabled: false
-    max_bytes: 5242880
-    backup_count: 3
-""")
-
-        # Create .project_root marker
-        (tmp_path / ".project_root").touch()
-
-        # Reset the cached config
         logging_module._logging_config = None
 
-        with patch("modules.backend.core.logging.find_project_root", return_value=tmp_path):
+        with patch("modules.backend.core.logging.load_yaml_config", return_value=test_config):
             config = logging_module._load_logging_config()
 
             assert config["level"] == "DEBUG"
@@ -69,54 +57,39 @@ handlers:
             assert config["handlers"]["file"]["max_bytes"] == 5242880
             assert config["handlers"]["file"]["backup_count"] == 3
 
-        # Reset for other tests
         logging_module._logging_config = None
 
     def test_load_logging_config_raises_if_file_missing(self, tmp_path):
         """Should raise FileNotFoundError if logging.yaml doesn't exist."""
         from modules.backend.core import logging as logging_module
 
-        # Create .project_root marker but no config file
-        (tmp_path / ".project_root").touch()
-        (tmp_path / "config" / "settings").mkdir(parents=True)
-
-        # Reset the cached config
         logging_module._logging_config = None
 
-        with patch("modules.backend.core.logging.find_project_root", return_value=tmp_path):
+        with patch(
+            "modules.backend.core.logging.load_yaml_config",
+            side_effect=FileNotFoundError("Configuration file not found: logging.yaml"),
+        ):
             with pytest.raises(FileNotFoundError) as exc_info:
                 logging_module._load_logging_config()
 
             assert "logging.yaml" in str(exc_info.value)
 
-        # Reset for other tests
         logging_module._logging_config = None
 
     def test_config_is_cached(self, tmp_path):
         """Should cache the configuration after first load."""
         from modules.backend.core import logging as logging_module
 
-        # Create a temporary config structure
-        config_dir = tmp_path / "config" / "settings"
-        config_dir.mkdir(parents=True)
+        test_config = {"level": "INFO", "format": "json"}
 
-        logging_yaml = config_dir / "logging.yaml"
-        logging_yaml.write_text('level: "INFO"\nformat: "json"')
-
-        # Create .project_root marker
-        (tmp_path / ".project_root").touch()
-
-        # Reset the cached config
         logging_module._logging_config = None
 
-        with patch("modules.backend.core.logging.find_project_root", return_value=tmp_path):
+        with patch("modules.backend.core.logging.load_yaml_config", return_value=test_config):
             config1 = logging_module._load_logging_config()
             config2 = logging_module._get_logging_config()
 
-            # Should be the same object (cached)
             assert config1 is config2
 
-        # Reset for other tests
         logging_module._logging_config = None
 
 

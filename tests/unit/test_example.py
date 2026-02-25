@@ -13,7 +13,7 @@ from click.testing import CliRunner
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from cli_click import main, validate_project_root
+from cli import main, validate_project_root
 
 
 class TestValidateProjectRoot:
@@ -26,7 +26,7 @@ class TestValidateProjectRoot:
         marker.touch()
 
         # Act & Assert
-        with patch("cli_click.PROJECT_ROOT", tmp_path):
+        with patch("cli.PROJECT_ROOT", tmp_path):
             result = validate_project_root()
             assert result == tmp_path
 
@@ -35,7 +35,7 @@ class TestValidateProjectRoot:
         # Arrange - tmp_path has no .project_root
 
         # Act & Assert
-        with patch("cli_click.PROJECT_ROOT", tmp_path):
+        with patch("cli.PROJECT_ROOT", tmp_path):
             with pytest.raises(SystemExit) as exc_info:
                 validate_project_root()
             assert exc_info.value.code == 1
@@ -74,8 +74,8 @@ class TestMainCLI:
     def test_verbose_flag_sets_info_logging(self, runner):
         """Should configure INFO level logging with --verbose."""
         # Arrange
-        with patch("cli_click.setup_logging") as mock_setup:
-            with patch("cli_click.validate_project_root"):
+        with patch("cli.setup_logging") as mock_setup:
+            with patch("cli.validate_project_root"):
                 # Act
                 runner.invoke(main, ["--action", "info", "--verbose"])
 
@@ -89,8 +89,8 @@ class TestMainCLI:
     def test_debug_flag_sets_debug_logging(self, runner):
         """Should configure DEBUG level logging with --debug."""
         # Arrange
-        with patch("cli_click.setup_logging") as mock_setup:
-            with patch("cli_click.validate_project_root"):
+        with patch("cli.setup_logging") as mock_setup:
+            with patch("cli.validate_project_root"):
                 # Act
                 runner.invoke(main, ["--action", "info", "--debug"])
 
