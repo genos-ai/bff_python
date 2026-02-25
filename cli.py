@@ -40,7 +40,7 @@ def validate_project_root() -> Path:
 @click.command()
 @click.option(
     "--action",
-    type=click.Choice(["server", "worker", "scheduler", "health", "config", "test", "info", "migrate"]),
+    type=click.Choice(["server", "worker", "scheduler", "health", "config", "test", "info", "migrate", "telegram-poll"]),
     default="info",
     help="Action to perform.",
 )
@@ -150,6 +150,9 @@ def main(
         python cli.py --action migrate --migrate-action current
         python cli.py --action migrate --migrate-action upgrade
         python cli.py --action migrate --migrate-action autogenerate -m "add users table"
+
+        # Telegram bot (polling mode for local development)
+        python cli.py --action telegram-poll --verbose
     """
     # Validate project root
     validate_project_root()
@@ -184,6 +187,8 @@ def main(
         show_info(logger)
     elif action == "migrate":
         run_migrations(logger, migrate_action, revision, message)
+    elif action == "telegram-poll":
+        run_telegram_poll(logger)
 
 
 def run_server(logger, host: str | None, port: int | None, reload: bool) -> None:
@@ -316,6 +321,56 @@ def run_scheduler(logger) -> None:
     except subprocess.CalledProcessError as e:
         logger.error("Scheduler failed to start", extra={"exit_code": e.returncode})
         sys.exit(e.returncode)
+
+
+def run_telegram_poll(logger) -> None:
+    """Start the Telegram bot in polling mode for local development."""
+    import asyncio
+
+    from modules.backend.core.config import get_app_config
+
+    features = get_app_config().features
+    if not features.get("channel_telegram_enabled"):
+        click.echo(
+            click.style(
+                "Error: channel_telegram_enabled is false in features.yaml. "
+                "Enable it to use the Telegram bot.",
+                fg="red",
+            ),
+            err=True,
+        )
+        sys.exit(1)
+
+    logger.info("Starting Telegram bot in polling mode")
+
+    try:
+        from modules.telegram.bot import create_bot, create_dispatcher
+
+        bot = create_bot()
+        dp = create_dispatcher()
+
+        click.echo("Starting Telegram bot (polling mode)")
+        click.echo("Send /start to your bot on Telegram")
+        click.echo("Press Ctrl+C to stop\n")
+
+        asyncio.run(_run_polling(bot, dp, logger))
+
+    except RuntimeError as e:
+        logger.error("Telegram bot failed to start", extra={"error": str(e)})
+        click.echo(click.style(f"Error: {e}", fg="red"), err=True)
+        sys.exit(1)
+
+
+async def _run_polling(bot, dp, logger) -> None:
+    """Run the bot polling loop."""
+    try:
+        await bot.delete_webhook(drop_pending_updates=True)
+        logger.info("Webhook deleted, starting polling")
+        await dp.start_polling(bot)
+    except KeyboardInterrupt:
+        logger.info("Telegram bot stopped")
+    finally:
+        await bot.session.close()
 
 
 def check_health(logger) -> None:
@@ -571,8 +626,9 @@ def show_info(logger) -> None:
     click.echo("  --action health    Check application health")
     click.echo("  --action config    Display configuration")
     click.echo("  --action test      Run test suite")
-    click.echo("  --action migrate   Run database migrations")
-    click.echo("  --action info      Show this information")
+    click.echo("  --action migrate        Run database migrations")
+    click.echo("  --action telegram-poll  Start Telegram bot (polling, local dev)")
+    click.echo("  --action info           Show this information")
     click.echo()
     click.echo("Logging Options:")
     click.echo("  --verbose, -v     Enable INFO level logging")
@@ -587,6 +643,7 @@ def show_info(logger) -> None:
     click.echo("  python cli.py --action migrate --migrate-action current")
     click.echo("  python cli.py --action migrate --migrate-action upgrade")
     click.echo("  python cli.py --action migrate --migrate-action autogenerate -m 'add users'")
+    click.echo("  python cli.py --action telegram-poll --verbose")
 
     logger.debug("Info displayed")
 
