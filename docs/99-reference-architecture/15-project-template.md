@@ -412,7 +412,7 @@ tests/
    ```
 7. Run database migrations:
    ```bash
-   python cli_click.py --action migrate --migrate-action upgrade
+   python cli.py --action migrate --migrate-action upgrade
    ```
 8. Start development servers:
    ```bash

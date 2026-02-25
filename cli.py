@@ -6,11 +6,11 @@ Example entry point demonstrating CLI patterns, logging, and configuration.
 All functionality is accessible through command-line options.
 
 Usage:
-    python cli_click.py --help
-    python cli_click.py --action server --verbose
-    python cli_click.py --action health --debug
-    python cli_click.py --action config
-    python cli_click.py --action test --test-type unit
+    python cli.py --help
+    python cli.py --action server --verbose
+    python cli.py --action health --debug
+    python cli.py --action config
+    python cli.py --action test --test-type unit
 """
 
 import subprocess
@@ -126,30 +126,30 @@ def main(
     Examples:
 
         # Start development server
-        python cli_click.py --action server --reload --verbose
+        python cli.py --action server --reload --verbose
 
         # Start background task worker
-        python cli_click.py --action worker --verbose
+        python cli.py --action worker --verbose
 
         # Start task scheduler (for cron-based tasks)
-        python cli_click.py --action scheduler --verbose
+        python cli.py --action scheduler --verbose
 
         # Check application health
-        python cli_click.py --action health --debug
+        python cli.py --action health --debug
 
         # View loaded configuration
-        python cli_click.py --action config
+        python cli.py --action config
 
         # Run unit tests with coverage
-        python cli_click.py --action test --test-type unit --coverage
+        python cli.py --action test --test-type unit --coverage
 
         # Show application info
-        python cli_click.py --action info
+        python cli.py --action info
 
         # Database migrations
-        python cli_click.py --action migrate --migrate-action current
-        python cli_click.py --action migrate --migrate-action upgrade
-        python cli_click.py --action migrate --migrate-action autogenerate -m "add users table"
+        python cli.py --action migrate --migrate-action current
+        python cli.py --action migrate --migrate-action upgrade
+        python cli.py --action migrate --migrate-action autogenerate -m "add users table"
     """
     # Validate project root
     validate_project_root()
@@ -579,14 +579,14 @@ def show_info(logger) -> None:
     click.echo("  --debug, -d       Enable DEBUG level logging")
     click.echo()
     click.echo("Examples:")
-    click.echo("  python cli_click.py --action server --reload --verbose")
-    click.echo("  python cli_click.py --action worker --workers 2 --verbose")
-    click.echo("  python cli_click.py --action scheduler --verbose")
-    click.echo("  python cli_click.py --action health --debug")
-    click.echo("  python cli_click.py --action test --test-type unit --coverage")
-    click.echo("  python cli_click.py --action migrate --migrate-action current")
-    click.echo("  python cli_click.py --action migrate --migrate-action upgrade")
-    click.echo("  python cli_click.py --action migrate --migrate-action autogenerate -m 'add users'")
+    click.echo("  python cli.py --action server --reload --verbose")
+    click.echo("  python cli.py --action worker --workers 2 --verbose")
+    click.echo("  python cli.py --action scheduler --verbose")
+    click.echo("  python cli.py --action health --debug")
+    click.echo("  python cli.py --action test --test-type unit --coverage")
+    click.echo("  python cli.py --action migrate --migrate-action current")
+    click.echo("  python cli.py --action migrate --migrate-action upgrade")
+    click.echo("  python cli.py --action migrate --migrate-action autogenerate -m 'add users'")
 
     logger.debug("Info displayed")
 

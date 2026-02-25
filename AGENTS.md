@@ -39,7 +39,7 @@ Model Layer (modules/backend/models/)     → SQLAlchemy entities
 
 ### Entry Points
 
-- `cli_click.py` — Click-based CLI (--action server|worker|scheduler|health|config|test|migrate|info)
+- `cli.py` — Click-based CLI (--action server|worker|scheduler|health|config|test|migrate|info)
 - `cli_typer_example.py` — Typer-based CLI with command groups (server, db, test, health, system, shell)
 - `modules/backend/main.py` — FastAPI application (for uvicorn)
 

@@ -61,7 +61,7 @@ async def send_message(base_url: str, timeout: float, message: str, session_id: 
             )
         except httpx.ConnectError:
             click.echo(click.style("Error: Backend is not reachable.", fg="red"), err=True)
-            click.echo("Start it with: python cli_click.py --action server", err=True)
+            click.echo("Start it with: python cli.py --action server", err=True)
             return 1
 
     if raw:

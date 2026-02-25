@@ -1,5 +1,5 @@
 """
-Integration Tests for cli_click.py CLI.
+Integration Tests for cli.py CLI.
 
 Tests the CLI as a whole with real execution paths.
 """
@@ -16,13 +16,13 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 
 
 class TestExampleCLI:
-    """Integration tests for cli_click.py command-line interface."""
+    """Integration tests for cli.py command-line interface."""
 
     def test_help_returns_zero_exit_code(self):
         """Should return exit code 0 for --help."""
         # Act
         result = subprocess.run(
-            [sys.executable, "cli_click.py", "--help"],
+            [sys.executable, "cli.py", "--help"],
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
@@ -37,7 +37,7 @@ class TestExampleCLI:
         """Should successfully display info."""
         # Act
         result = subprocess.run(
-            [sys.executable, "cli_click.py", "--action", "info"],
+            [sys.executable, "cli.py", "--action", "info"],
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
@@ -51,7 +51,7 @@ class TestExampleCLI:
         """Should display configuration from YAML files."""
         # Act
         result = subprocess.run(
-            [sys.executable, "cli_click.py", "--action", "config"],
+            [sys.executable, "cli.py", "--action", "config"],
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
@@ -66,7 +66,7 @@ class TestExampleCLI:
         """Should run health checks and report results."""
         # Act
         result = subprocess.run(
-            [sys.executable, "cli_click.py", "--action", "health"],
+            [sys.executable, "cli.py", "--action", "health"],
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
@@ -83,7 +83,7 @@ class TestExampleCLI:
         """Should produce more output with --verbose flag."""
         # Act - without verbose
         result_quiet = subprocess.run(
-            [sys.executable, "cli_click.py", "--action", "info"],
+            [sys.executable, "cli.py", "--action", "info"],
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
@@ -91,7 +91,7 @@ class TestExampleCLI:
 
         # Act - with verbose
         result_verbose = subprocess.run(
-            [sys.executable, "cli_click.py", "--action", "health", "--verbose"],
+            [sys.executable, "cli.py", "--action", "health", "--verbose"],
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
@@ -107,7 +107,7 @@ class TestExampleCLI:
         """Should produce debug-level output with --debug flag."""
         # Act
         result = subprocess.run(
-            [sys.executable, "cli_click.py", "--action", "health", "--debug"],
+            [sys.executable, "cli.py", "--action", "health", "--debug"],
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
@@ -124,7 +124,7 @@ class TestExampleCLI:
         """Should show error for invalid action."""
         # Act
         result = subprocess.run(
-            [sys.executable, "cli_click.py", "--action", "invalid"],
+            [sys.executable, "cli.py", "--action", "invalid"],
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
@@ -138,7 +138,7 @@ class TestExampleCLI:
         """Should report when no tests are found."""
         # Act - run tests in unit directory (may have no tests yet)
         result = subprocess.run(
-            [sys.executable, "cli_click.py", "--action", "test", "--test-type", "unit"],
+            [sys.executable, "cli.py", "--action", "test", "--test-type", "unit"],
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
@@ -154,8 +154,8 @@ class TestExampleCLIFromDifferentDirectory:
 
     def test_fails_gracefully_outside_project(self, tmp_path):
         """Should fail gracefully when config cannot be loaded from different directory."""
-        # Create a cli_click.py copy without .project_root
-        example_script = PROJECT_ROOT / "cli_click.py"
+        # Create a cli.py copy without .project_root
+        example_script = PROJECT_ROOT / "cli.py"
 
         # Act - try to import and run from temp directory
         result = subprocess.run(

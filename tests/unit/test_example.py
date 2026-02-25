@@ -1,5 +1,5 @@
 """
-Unit Tests for cli_click.py Entry Script.
+Unit Tests for cli.py Entry Script.
 
 Tests individual functions with mocked dependencies.
 """
@@ -184,7 +184,7 @@ class TestActionBehavior:
         result = runner.invoke(main, ["--action", "info"])
 
         # Assert
-        assert "python cli_click.py" in result.output
+        assert "python cli.py" in result.output
         assert "Examples:" in result.output
 
     def test_config_shows_all_sections(self, runner):

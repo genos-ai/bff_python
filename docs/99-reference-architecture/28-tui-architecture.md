@@ -471,7 +471,7 @@ tui:
 python -m modules.tui
 
 # Or via CLI
-python cli_click.py --action tui
+python cli.py --action tui
 ```
 
 ### Textual Web (Browser)

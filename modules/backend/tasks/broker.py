@@ -6,7 +6,7 @@ Uses Redis as the backend for task queue management.
 
 Usage:
     # Start worker process
-    python cli_click.py --action worker
+    python cli.py --action worker
 
     # Or directly with taskiq
     taskiq worker modules.backend.tasks.broker:broker
